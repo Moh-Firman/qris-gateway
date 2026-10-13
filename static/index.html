@@ -140,7 +140,8 @@ canvas.chart{width:100%;height:200px;display:block}
 @media(max-width:640px){
   .topbar-in{padding:10px 12px}
   .brand{font-size:15px}
-  .live-pill{display:none}
+  .live-pill{padding:4px 7px;font-size:0;gap:0}
+  .live-pill .live-dot{width:8px;height:8px}
   #user-name{display:none}
   .icon-btn{width:36px;height:36px}
   .content{padding:12px 12px 48px}
@@ -813,32 +814,6 @@ async function loadTx() {
       '<td><b>' + rupiah(t.amount) + '</b></td><td>' + stBadge(t.status) + '</td></tr>'
     ).join('') : '<tr><td colspan="5" class="muted">Belum ada transaksi.</td></tr>';
   } catch (e) { $('#tx-body').innerHTML = '<tr><td colspan="5" class="muted">Gagal memuat.</td></tr>'; }
-}
-
-/* ================= tarik dana ================= */
-async function doWithdraw() {
-  const amount = Math.floor(Number($('#wd-amount').value));
-  if (!amount || amount < 10000) { toast('Nominal minimal Rp10.000'); return; }
-  const dest = $('#wd-dest').value, acc = $('#wd-account').value.trim(), name = $('#wd-name').value.trim();
-  if (!acc || !name) { toast('Lengkapi nomor dan nama akun tujuan'); return; }
-  const btn = $('#btn-withdraw'); btn.disabled = true;
-  try {
-    await api('withdraw_request', { amount, destination: dest, account: acc, account_name: name });
-    toast('Permintaan penarikan dikirim');
-    $('#wd-amount').value = ''; $('#wd-account').value = ''; $('#wd-name').value = '';
-    loadWithdraws();
-  } catch (e) { toast('Gagal: ' + e.message); }
-  btn.disabled = false;
-}
-async function loadWithdraws() {
-  try {
-    const r = await api('withdraw_list');
-    const items = r.items || r.withdraws || [];
-    $('#wd-history').innerHTML = items.length ? items.slice(0, 10).map(w =>
-      '<div class="kv"><span class="k">' + fdate(w.created_at) + '<br><span class="muted">' + esc(w.destination || '') + ' ' + esc(w.account || '') + '</span></span>' +
-      '<span style="display:flex;gap:8px;align-items:center"><span class="v">' + rupiah(w.amount) + '</span>' + stBadge(w.status) + '</span></div>'
-    ).join('') : '<p class="muted" style="font-size:13px">Belum ada penarikan.</p>';
-  } catch (e) {}
 }
 
 async function loadNotif() {
