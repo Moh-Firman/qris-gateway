@@ -1,7 +1,7 @@
 # QRIS Gateway
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Moh-Firman/qris-gateway/main/docs/profile.webp" width="120" style="border-radius:50%">
+  <img src="https://raw.githubusercontent.com/Moh-Firman/qris-gateway/main/docs/profile.png" width="120" style="border-radius:50%">
 </p>
 
 <p align="center">
