@@ -310,8 +310,8 @@ print('Password direset')
 
 ## FAQ
 
-**Q: Apakah nama merchant custom berfungsi?**
-A: Nama merchant custom **masuk ke data QR** dan terbaca oleh sistem. Namun saat user scan & bayar, aplikasi pembayaran (DANA/OVO/GoPay) menampilkan **nama terdaftar akun DANA Bisnis**, bukan nama dari QR. Ini keterbatasan dari pihak DANA, bukan bug.
+**Q: Apakah nama merchant custom tampil?**
+A: Ya. Nama merchant yang diisi saat buat topup akan **tampil di QRIS** dan terlihat saat user scan untuk bayar.
 
 **Q: Bisa untuk banyak merchant?**
 A: Satu gateway = satu akun DANA tujuan. Untuk banyak merchant, setiap merchant butuh gateway + HP + akun DANA sendiri.
