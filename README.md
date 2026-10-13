@@ -49,6 +49,7 @@ QRIS Gateway adalah sistem pembayaran mandiri yang mengubah satu akun QRIS/DANA 
 - Jasa top-up / voucher
 - Donasi / crowdfunding
 - Sistem billing / langganan
+- Yang butuh nama merchant custom tampil di QRIS
 
 **Tidak cocok untuk:**
 - Yang butuh settlement ke banyak rekening berbeda (satu akun DANA = satu tujuan)
