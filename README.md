@@ -327,7 +327,7 @@ A: VPS (~Rp50rb/bulan) + domain (~Rp150rb/tahun). Tidak ada biaya per transaksi 
 ## Tentang Pembuat
 
 <p>
-  <img src="https://raw.githubusercontent.com/Moh-Firman/qris-gateway/main/docs/profile.webp" width="80" style="border-radius:50%;vertical-align:middle">
+  <img src="https://raw.githubusercontent.com/Moh-Firman/qris-gateway/main/docs/profile.png" width="80" style="border-radius:50%;vertical-align:middle">
   <b>Moh Firman</b> — Indonesia
 </p>
 
