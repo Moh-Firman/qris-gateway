@@ -791,6 +791,7 @@ def ep_admin_stats(p, u):
         tt = c.execute(f"SELECT COUNT(*) c FROM qris_topups WHERE {where}", params).fetchone()["c"]
         pd = c.execute(f"SELECT COUNT(*) c FROM qris_topups WHERE {where} AND status='paid'", params).fetchone()["c"]
         pn = c.execute(f"SELECT COUNT(*) c FROM qris_topups WHERE {where} AND status='pending'", params).fetchone()["c"]
+        ex = c.execute(f"SELECT COUNT(*) c FROM qris_topups WHERE {where} AND status='expired'", params).fetchone()["c"]
         vol = c.execute(f"SELECT COALESCE(SUM(amount),0) s FROM qris_topups WHERE {where} AND status='paid'", params).fetchone()["s"]
         tv = c.execute(f"SELECT COALESCE(SUM(amount),0) s FROM qris_topups WHERE {where} AND status='paid' AND paid_at>?",
                        (*params, int(time.time()*1000)-86400000)).fetchone()["s"]
@@ -799,7 +800,7 @@ def ep_admin_stats(p, u):
         boot = str(int(time.time()*1000)); kv_set("gateway_boot_time", boot)
     return {"gateway_name": kv_get("gateway_name") or "QRIS Gateway",
             "qris_configured": bool(kv_get("qris_static")),
-            "total_users": tu, "total_tx": tt, "paid_tx": pd, "pending_tx": pn,
+            "total_users": tu, "total_tx": tt, "paid_tx": pd, "pending_tx": pn, "expired_tx": ex,
             "total_volume": vol, "today_volume": tv,
             "success_rate": round(pd/tt*100) if tt else 0,
             "boot_time": int(boot), "now": int(time.time()*1000)}
