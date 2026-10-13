@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://gateway.mxthz.xyz/apk-dana-notify.apk">📱 Download APK DANA Notify</a>
+  <a href="https://github.com/Moh-Firman/qris-gateway/blob/main/dana-notify.apk">📱 Download APK DANA Notify</a>
 </p>
 
 ---
