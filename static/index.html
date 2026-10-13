@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QRIS Gateway</title>
+<link rel="icon" type="image/webp" href="/logo.webp">
 <style>
 :root{
   --bg:#0b0f17; --surface:#111827; --surface2:#1a2333; --border:#243044;
@@ -11,13 +12,15 @@
   --primary:#3b82f6; --primary-d:#2563eb; --ok:#22c55e; --warn:#f59e0b; --danger:#ef4444;
   --radius:12px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none}
+input,textarea{ -webkit-user-select:text;user-select:text }
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 .hidden{display:none!important}
 /* ---------- topbar ---------- */
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
 .topbar-in{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:12px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand-img{width:36px;height:36px;border-radius:10px;object-fit:cover}
 .brand-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--primary),#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
 .live-pill{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--ok);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);padding:4px 10px;border-radius:20px}
 .live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
@@ -180,11 +183,13 @@ canvas.chart{width:100%;height:200px;display:block}
 <body>
 <div class="app">
   <div class="topbar" id="topbar" style="display:none"><div class="topbar-in">
-    <div class="brand"><div class="brand-logo">Q</div><span>QRIS Gateway</span></div>
+    <div class="brand"><img src="/logo.webp" alt="Logo" class="brand-img"><span>QRIS Gateway</span></div>
     <div class="live-pill"><span class="live-dot"></span>Live</div>
     <div class="topbar-sp"></div>
     <div id="topbar-user" class="hidden" style="display:none;align-items:center;gap:8px">
-      <div class="user-chip"><div class="user-av" id="user-av">?</div><span id="user-name">…</span></div>
+      <button class="icon-btn" id="btn-notif-top" title="Notifikasi" aria-label="Notifikasi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
       <button class="icon-btn" id="btn-settings" title="Pengaturan akun" aria-label="Pengaturan">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
@@ -356,6 +361,8 @@ canvas.chart{width:100%;height:200px;display:block}
         </div>
       </div>
 
+
+
       <!-- G. DOKUMENTASI API (admin) -->
       <div class="sec admin-sec" id="sec-api">
         <div class="sec-head">
@@ -378,6 +385,19 @@ canvas.chart{width:100%;height:200px;display:block}
 </div><!-- /app -->
 
 <!-- MODAL PENGATURAN -->
+
+<div class="modal-ov hidden" id="modal-notif">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-h"><h3>Log Notifikasi DANA</h3><button class="icon-btn" id="btn-notif-close">✕</button></div>
+    <p class="muted" style="font-size:12px;margin-bottom:12px">Semua notifikasi masuk dari aplikasi</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>WAKTU</th><th>NOMINAL</th><th>ISI</th><th>COCOK</th></tr></thead>
+      <tbody id="notif-body"><tr><td colspan="4" class="muted">Memuat…</td></tr></tbody>
+    </table></div>
+    <button class="btn btn-ghost btn-sm" id="btn-notif-reload" style="margin-top:12px">Muat Ulang</button>
+  </div>
+</div>
+
 <div class="modal-ov hidden" id="modal-settings">
   <div class="modal">
     <div class="modal-h"><h3>Pengaturan Akun</h3>
@@ -504,8 +524,6 @@ async function boot() {
     if (!u || !u.username || !u.id) throw new Error('no session');
     state.user = u;
     state.isAdmin = !!(u.is_admin || u.isAdmin || u.role === 'admin');
-    $('#user-name').textContent = u.username || 'Pengguna';
-    $('#user-av').textContent = (u.username || '?').charAt(0).toUpperCase();
     showApp();
     applyRole();
     await loadDashboard();
@@ -522,8 +540,6 @@ async function doLogin() {
     const usr = r.user || { username: u };
     state.user = usr;
     state.isAdmin = !!(usr.is_admin || usr.isAdmin || usr.role === 'admin');
-    $('#user-name').textContent = usr.username || u;
-    $('#user-av').textContent = (usr.username || u).charAt(0).toUpperCase();
     $('#li-pass').value = '';
     showApp();
     applyRole();
@@ -793,7 +809,7 @@ async function loadTx() {
     const items = r.items || r.transactions || [];
     $('#tx-body').innerHTML = items.length ? items.map(t =>
       '<tr><td class="mono">#' + esc(t.id) + '</td><td>' + fdate(t.created_at) + '</td>' +
-      '<td>' + esc(t.username || t.user || '–') + '</td>' +
+      '<td><b>' + esc(t.username || t.user_masked || '–') + '</b></td>' +
       '<td><b>' + rupiah(t.amount) + '</b></td><td>' + stBadge(t.status) + '</td></tr>'
     ).join('') : '<tr><td colspan="5" class="muted">Belum ada transaksi.</td></tr>';
   } catch (e) { $('#tx-body').innerHTML = '<tr><td colspan="5" class="muted">Gagal memuat.</td></tr>'; }
@@ -824,8 +840,22 @@ async function loadWithdraws() {
     ).join('') : '<p class="muted" style="font-size:13px">Belum ada penarikan.</p>';
   } catch (e) {}
 }
+
+async function loadNotif() {
+  try {
+    const r = await api('admin_notifications');
+    const items = r.items || [];
+    $('#notif-body').innerHTML = items.length ? items.map(n =>
+      '<tr><td>' + fdate(n.created_at) + '</td>' +
+      '<td><b>' + rupiah(n.amount) + '</b></td>' +
+      '<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis">' + esc(n.text || '') + '</td>' +
+      '<td>' + (n.matched_topup_id ? '<span class="status st-paid">#' + n.matched_topup_id + '</span>' : '<span class="muted">–</span>') + '</td></tr>'
+    ).join('') : '<tr><td colspan="4" class="muted">Belum ada notifikasi.</td></tr>';
+  } catch (e) { $('#notif-body').innerHTML = '<tr><td colspan="4" class="muted">Gagal memuat.</td></tr>'; }
+}
+
 async function loadAdminAll() {
-  await Promise.all([refreshBalance(), loadHistory(), loadQrisCurrent(), loadTx(), loadWithdraws()]);
+  await Promise.all([refreshBalance(), loadHistory(), loadQrisCurrent(), loadTx()]);
 }
 
 /* ================= dokumentasi api ================= */
@@ -999,6 +1029,9 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#li-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   $('#btn-logout').addEventListener('click', doLogout);
   $('#btn-settings').addEventListener('click', openModal);
+  $('#btn-notif-top').addEventListener('click', () => { $('#modal-notif').classList.remove('hidden'); loadNotif(); });
+  $('#btn-notif-close').addEventListener('click', () => $('#modal-notif').classList.add('hidden'));
+  $('#modal-notif').addEventListener('click', e => { if (e.target.id === 'modal-notif') $('#modal-notif').classList.add('hidden'); });
   $('#btn-modal-close').addEventListener('click', closeModal);
   $('#modal-settings').addEventListener('click', e => { if (e.target.id === 'modal-settings') closeModal(); });
   $('#btn-save-username').addEventListener('click', saveUsername);
@@ -1015,12 +1048,25 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#qris-photo').addEventListener('change', decodeQrisPhoto);
   $('#btn-qris-save').addEventListener('click', saveQrisStatic);
   $('#btn-tx-reload').addEventListener('click', loadTx);
+  $('#btn-notif-reload').addEventListener('click', loadNotif);
   document.addEventListener('click', e => {
     const b = e.target.closest('.copy-btn[data-copy]');
     if (b) copyText(b.getAttribute('data-copy'));
   });
   renderApiDocs();
   boot();
+});
+
+/* anti-intip */
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('selectstart', e => { if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+document.addEventListener('dragstart', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+      (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S'))) {
+    e.preventDefault();
+  }
 });
 </script>
 </body>

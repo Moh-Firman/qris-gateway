@@ -690,6 +690,16 @@ def ep_topup_confirm(p, u):
         return {"ok": True, "status": t["status"]}
 
 
+def expire_old_topups():
+    """Tandai pending >30 menit sebagai expired."""
+    try:
+        cutoff = int(time.time() * 1000) - 30 * 60000
+        with _db_lock, db() as c:
+            c.execute("UPDATE qris_topups SET status='expired' WHERE status='pending' AND created_at<?", (cutoff,))
+    except Exception:
+        pass
+
+
 def ep_topup_list(p, u):
     expire_old_topups()
     tid = get_user_id(p, u)
@@ -811,10 +821,27 @@ def ep_admin_transactions(p, u):
             rows = c.execute(f"SELECT * FROM qris_topups WHERE {where} AND status=? ORDER BY created_at DESC LIMIT ? OFFSET ?",
                              (*wparams, status, limit, offset)).fetchall()
             total = c.execute(f"SELECT COUNT(*) c FROM qris_topups WHERE {where} AND status=?", (*wparams, status)).fetchone()["c"]
-    items = [{"id": r["id"], "user_masked": "***"+str(r["telegram_id"])[-3:], "amount": r["amount"],
-              "unique_code": r["unique_code"], "total": r["total"], "status": r["status"],
-              "created_at": r["created_at"], "paid_at": r["paid_at"]} for r in rows]
+    items = []
+    for r in rows:
+        tid = r["telegram_id"]
+        username = None
+        items.append({"id": r["id"], "username": username,
+              "user_masked": "***"+str(tid)[-3:] if tid else "–",
+              "amount": r["amount"], "unique_code": r["unique_code"],
+              "total": r["total"], "status": r["status"],
+              "created_at": r["created_at"], "paid_at": r["paid_at"]})
     return {"items": items, "total": total, "offset": offset, "limit": limit}
+
+
+def ep_admin_notifications(p, u):
+    get_user_id(p, u)
+    require_admin(p, u)
+    limit = min(100, max(10, int(p.get("limit") or 30)))
+    with _db_lock, db() as c:
+        rows = c.execute("SELECT id, amount, raw_text, matched_topup_id, created_at FROM qris_notifications ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
+    items = [{"id": r["id"], "amount": r["amount"], "text": r["raw_text"],
+              "matched_topup_id": r["matched_topup_id"], "created_at": r["created_at"]} for r in rows]
+    return {"items": items}
 
 
 def ep_admin_pending(p, u):
@@ -984,17 +1011,7 @@ def ep_mutasi_notify(p, u):
             "telegram_id": t["telegram_id"], "amount": t["amount"], "balance": bal}
 
 
-def ep_admin_notifications(p, u):
-    require_admin(p, u)
-    only_unmatched = p.get("unmatched")
-    with _db_lock, db() as c:
-        if only_unmatched:
-            rows = c.execute("SELECT * FROM qris_notifications WHERE matched_topup_id IS NULL"
-                             " ORDER BY created_at DESC LIMIT 50").fetchall()
-        else:
-            rows = c.execute("SELECT * FROM qris_notifications"
-                             " ORDER BY created_at DESC LIMIT 50").fetchall()
-    return {"ok": True, "items": [dict(r) for r in rows]}
+
 
 
 def ep_admin_manual_credit(p, u):
@@ -1096,7 +1113,7 @@ ENDPOINTS = {
     "topup_create": ep_topup_create, "topup_confirm": ep_topup_confirm, "topup_cancel": ep_topup_cancel,
     "topup_list": ep_topup_list, "gateway_name": ep_gateway_name,
     "qris_config": ep_qris_config, "admin_stats": ep_admin_stats,
-    "admin_transactions": ep_admin_transactions, "admin_pending": ep_admin_pending,
+    "admin_transactions": ep_admin_transactions, "admin_notifications": ep_admin_notifications, "admin_pending": ep_admin_pending,
     "admin_approve": ep_admin_approve, "admin_charts": ep_admin_charts,
     "internal_secret": ep_internal_secret,
     "internal_create": ep_internal_create, "internal_status": ep_internal_status,
@@ -1129,6 +1146,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(data)))
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+        self.send_header("Server", "QRIS-Gateway")
         if cookie:
             self.send_header("Set-Cookie", cookie)
         self.end_headers()
@@ -1157,6 +1178,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", MIME.get(ext, "application/octet-stream"))
             self.send_header("Content-Length", str(len(data)))
+            self.send_header("X-Frame-Options", "DENY")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Cache-Control", "no-store, max-age=0")
             self.end_headers()
             self.wfile.write(data)
         except Exception as e:
