@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Moh-Firman/qris-gateway/raw/main/apk/dana-notify.apk">📱 Download APK DANA Notify</a>
+  <a href="https://gateway.mxthz.xyz/apk-dana-notify.apk">📱 Download APK DANA Notify</a>
 </p>
 
 ---
@@ -106,7 +106,7 @@ QRIS Gateway adalah sistem pembayaran mandiri yang mengubah satu akun QRIS/DANA 
 
 - Android 8.0+
 - Aplikasi DANA terinstall & login
-- Aplikasi DANA Notify ([download di sini](https://github.com/Moh-Firman/qris-gateway/raw/main/apk/dana-notify.apk))
+- Aplikasi DANA Notify ([download di sini](https://gateway.mxthz.xyz/apk-dana-notify.apk))
 - Koneksi internet stabil
 
 ---
@@ -164,7 +164,7 @@ gateway.example.com {
 
 ### 4. Install Aplikasi DANA Notify
 
-1. Download APK: [dana-notify.apk](https://github.com/Moh-Firman/qris-gateway/raw/main/apk/dana-notify.apk)
+1. Download APK: [dana-notify.apk](https://gateway.mxthz.xyz/apk-dana-notify.apk)
 2. Install di HP Android (izinkan "install dari sumber tidak dikenal")
 3. Buka aplikasi, isi:
    - **Webhook URL**: `https://gateway.example.com/api/mutasi_notify`
