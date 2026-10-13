@@ -174,7 +174,9 @@ gateway.example.com {
 ### 5. Konfigurasi Awal
 
 1. Buka `https://gateway.example.com`
-2. Login dengan akun admin default (cek `init_db()` di `gateway.py` untuk kredensial awal)
+2. Login dengan akun admin default:
+   - Username: `admin`
+   - Password: `admin123`
 3. **Segera ganti password** via ikon gear di topbar
 4. Upload foto QRIS statis di bagian **QRIS Statis**
 5. Atur nama merchant di **Profil**
