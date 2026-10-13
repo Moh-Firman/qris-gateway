@@ -67,7 +67,6 @@ QRIS Gateway adalah sistem pembayaran mandiri yang mengubah satu akun QRIS/DANA 
 | Dashboard | KPI, grafik volume 7 hari, distribusi status |
 | Log Notifikasi | Semua notifikasi DANA tercatat dan bisa dipantau |
 | API Lengkap | 7+ endpoint dengan contoh cURL, JS, Python, PHP |
-| Multi-User | Role admin & user biasa |
 | Responsif | Tampilan menyesuaikan HP, tablet, desktop |
 
 ---
