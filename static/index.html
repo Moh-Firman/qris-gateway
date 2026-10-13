@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QRIS Gateway</title>
+<style>
+:root{
+  --bg:#0b0f17; --surface:#111827; --surface2:#1a2333; --border:#243044;
+  --text:#e8edf5; --text2:#9aa7bd; --text3:#5f6b84;
+  --primary:#3b82f6; --primary-d:#2563eb; --ok:#22c55e; --warn:#f59e0b; --danger:#ef4444;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+.hidden{display:none!important}
+/* ---------- topbar ---------- */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.topbar-in{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--primary),#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+.live-pill{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--ok);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);padding:4px 10px;border-radius:20px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.topbar-sp{flex:1}
+.user-chip{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.user-av{width:30px;height:30px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary)}
+.icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.icon-btn:hover{color:var(--text);border-color:var(--primary)}
+.icon-btn svg{width:17px;height:17px}
+/* ---------- buttons / fields ---------- */
+.btn{border:none;border-radius:9px;padding:10px 16px;font-size:13.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.15s;font-family:inherit}
+.btn svg{width:15px;height:15px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-d)}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--primary)}
+.btn-danger{background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.3)}
+.btn-sm{padding:7px 12px;font-size:12.5px}
+.btn-block{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.field{margin-bottom:12px}
+.field input,.field select,.field textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:11px 13px;font-size:13.5px;font-family:inherit;outline:none;transition:.15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.field textarea{resize:vertical;min-height:90px;font-family:monospace;font-size:12px}
+.field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:var(--text2)}
+.muted{color:var(--text3)}
+/* ---------- layout ---------- */
+.content{max-width:1200px;margin:0 auto;padding:24px 20px 60px}
+.page-title{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.page-sub{color:var(--text2);font-size:13px;margin-bottom:20px}
+.sec{margin-bottom:36px}
+.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-head .sec-ico{width:32px;height:32px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--primary)}
+.sec-head .sec-ico svg{width:16px;height:16px}
+.sec-head h2{font-size:17px;font-weight:700}
+.badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.04em}
+.badge-admin{background:rgba(59,130,246,.14);color:var(--primary);border:1px solid rgba(59,130,246,.35)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+.card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-t{font-size:14.5px;font-weight:700}
+.card-t2{font-size:12px;color:var(--text3);margin-top:2px}
+.grid2{display:grid;gap:16px}
+@media(min-width:820px){.grid2{grid-template-columns:1fr 1fr}}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+@media(min-width:820px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.kpi-lbl{font-size:11.5px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.kpi-val{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.kpi-val.primary{color:var(--primary)}.kpi-val.ok{color:var(--ok)}.kpi-val.warn{color:var(--warn)}
+.kpi-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--text2)}.kv .v{font-weight:700}
+/* ---------- tables ---------- */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+th{background:var(--surface2);text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;white-space:nowrap}
+td{padding:10px 12px;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.015)}
+.status{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.st-paid{background:rgba(34,197,94,.13);color:var(--ok)}
+.st-pending{background:rgba(245,158,11,.13);color:var(--warn)}
+.st-expired,.st-rejected{background:rgba(239,68,68,.13);color:var(--danger)}
+.mono{font-family:monospace;font-size:12px;background:var(--surface2);padding:2px 8px;border-radius:6px}
+/* ---------- topup ---------- */
+.preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.preset{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:10px 4px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.preset:hover{border-color:var(--primary);color:var(--primary)}
+.preset.active{border-color:var(--primary);background:rgba(59,130,246,.12);color:var(--primary)}
+.qr-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;background:#fff;border-radius:12px;margin:14px 0;gap:10px}
+.qr-box img,.qr-box canvas{width:220px;height:220px;border-radius:6px}
+.qr-merchant{color:#111;font-size:17px;font-weight:700;letter-spacing:.02em;text-align:center}
+.pay-amount{text-align:center;font-size:26px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.pay-note{text-align:center;font-size:13px;color:var(--text2);margin-bottom:8px}
+.countdown{text-align:center;font-size:13px;color:var(--warn);font-weight:700;margin-bottom:12px;font-variant-numeric:tabular-nums}
+.alert{border-radius:9px;padding:11px 14px;font-size:13px;margin-bottom:12px}
+.alert-info{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);color:#93c5fd}
+.alert-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#fcd34d}
+.alert-note{background:rgba(154,167,189,.08);border:1px solid var(--border);color:var(--text2)}
+.steps{display:flex;gap:6px;margin-bottom:14px}
+.step{flex:1;text-align:center;font-size:11.5px;font-weight:700;color:var(--text3);padding:8px 4px;border-radius:8px;background:var(--surface2)}
+.step.done{color:var(--ok);background:rgba(34,197,94,.1)}
+/* ---------- api docs ---------- */
+.doc-block{margin-bottom:18px}
+.doc-block h4{font-size:14px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.method{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:6px;background:rgba(59,130,246,.15);color:var(--primary);letter-spacing:.05em}
+.code-tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.code-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.code-tab.active{color:var(--primary);border-color:var(--primary)}
+.code-box{position:relative;background:#0a0e15;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.code-box pre{padding:14px;overflow-x:auto;font-size:12px;line-height:1.6;color:#c9d4e8;font-family:"JetBrains Mono",Consolas,monospace}
+.copy-btn{position:absolute;top:8px;right:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px}
+.copy-btn:hover{color:var(--text);border-color:var(--primary)}
+.copy-btn svg{width:12px;height:12px}
+/* ---------- login ---------- */
+.login-wrap{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
+.login-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;position:relative;z-index:2}
+.login-lock{width:56px;height:56px;border-radius:16px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.login-t{text-align:center;font-size:20px;font-weight:800;margin-bottom:4px}
+.login-s{text-align:center;font-size:13px;color:var(--text2);margin-bottom:22px}
+.login-btn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+.login-btn:hover{background:var(--primary-d)}
+.login-err{color:var(--danger);font-size:13px;min-height:20px;margin-bottom:10px;text-align:center}
+.bg-circle{position:absolute;border-radius:50%;filter:blur(90px);opacity:.25;z-index:1}
+.bg1{width:340px;height:340px;background:#3b82f6;top:-80px;left:-80px}
+.bg2{width:280px;height:280px;background:#7c3aed;bottom:-60px;right:-60px}
+/* ---------- modal ---------- */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;max-height:90vh;overflow-y:auto}
+.modal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-h h3{font-size:16px;font-weight:700}
+.footer{text-align:center;padding:20px;color:var(--text3);font-size:12px;border-top:1px solid var(--border);margin-top:10px}
+canvas.chart{width:100%;height:200px;display:block}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+/* ---------- responsive ---------- */
+@media(max-width:640px){
+  .topbar-in{padding:10px 12px}
+  .brand{font-size:15px}
+  .live-pill{display:none}
+  #user-name{display:none}
+  .icon-btn{width:36px;height:36px}
+  .content{padding:12px 12px 48px}
+  .sec{margin-bottom:24px}
+  .page-title{font-size:19px}
+  .kpis{grid-template-columns:repeat(2,1fr);gap:10px}
+  .kpi{padding:12px}
+  .kpi-val{font-size:19px}
+  .grid2{grid-template-columns:1fr}
+  .preset-grid{grid-template-columns:repeat(2,1fr)}
+  .qr-box img,.qr-box canvas{width:180px;height:180px}
+  .pay-amount{font-size:22px}
+  .login-card{padding:24px 20px}
+  .modal{padding:18px}
+  .modal-ov{padding:10px}
+  .code-box pre{font-size:11px;padding:10px}
+  .steps{flex-direction:column;gap:4px}
+  .step{text-align:left;padding:6px 10px}
+  table{font-size:12px;min-width:480px}
+  th,td{padding:8px}
+  .btn{min-height:42px}
+  .field input,.field select{font-size:16px}
+  .toast{left:12px;right:12px;transform:none;text-align:center}
+}
+@media(min-width:641px) and (max-width:1023px){
+  .content{padding:16px;max-width:720px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid2{grid-template-columns:1fr}
+  .preset-grid{grid-template-columns:repeat(4,1fr)}
+}
+@media(min-width:1024px){
+  .content{max-width:1080px}
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .grid2{grid-template-columns:1fr 1fr}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <div class="topbar" id="topbar" style="display:none"><div class="topbar-in">
+    <div class="brand"><div class="brand-logo">Q</div><span>QRIS Gateway</span></div>
+    <div class="live-pill"><span class="live-dot"></span>Live</div>
+    <div class="topbar-sp"></div>
+    <div id="topbar-user" class="hidden" style="display:none;align-items:center;gap:8px">
+      <div class="user-chip"><div class="user-av" id="user-av">?</div><span id="user-name">…</span></div>
+      <button class="icon-btn" id="btn-settings" title="Pengaturan akun" aria-label="Pengaturan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button class="btn btn-ghost btn-sm" id="btn-logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Keluar
+      </button>
+    </div>
+  </div></div>
+
+  <div class="content">
+    <!-- LOGIN -->
+    <div id="pg-login">
+      <div class="login-wrap">
+        <div class="bg-circle bg1"></div><div class="bg-circle bg2"></div>
+        <div class="login-card">
+          <div class="login-lock"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <div class="login-t">Selamat Datang</div>
+          <div class="login-s">Login untuk melanjutkan ke dashboard</div>
+          <div class="field"><input type="text" id="li-user" placeholder="Username" autocomplete="username"></div>
+          <div class="field"><input type="password" id="li-pass" placeholder="Password" autocomplete="current-password"></div>
+          <div class="login-err" id="login-err"></div>
+          <button class="login-btn" id="btn-login">Login</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="pg-app" class="hidden" style="display:none">
+      <div class="sec hidden" id="no-access" style="text-align:center;padding:48px 24px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:8px">Akses Terbatas</div>
+        <p class="muted">Akun Anda tidak memiliki akses ke gateway ini.<br>Hubungi admin untuk informasi lebih lanjut.</p>
+      </div>
+
+
+      <!-- A. DASHBOARD (semua pengguna) -->
+      <div class="sec" id="sec-dash">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Ringkasan performa gateway <span id="dash-updated" class="muted"></span></div>
+        <div class="kpis">
+          <div class="kpi"><div class="kpi-lbl">Total Transaksi</div><div class="kpi-val" id="k-tx">–</div><div class="kpi-sub" id="k-tx-sub">semua status</div></div>
+          <div class="kpi"><div class="kpi-lbl">Berhasil</div><div class="kpi-val ok" id="k-paid">–</div><div class="kpi-sub" id="k-rate">tingkat keberhasilan –</div></div>
+          <div class="kpi"><div class="kpi-lbl">Pending</div><div class="kpi-val warn" id="k-pending">–</div><div class="kpi-sub">menunggu pembayaran</div></div>
+          <div class="kpi"><div class="kpi-lbl">Volume</div><div class="kpi-val primary" id="k-vol">–</div><div class="kpi-sub" id="k-vol24">24 jam terakhir: –</div></div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-h"><div><div class="card-t">Volume Transaksi</div><div class="card-t2">7 hari terakhir</div></div></div>
+            <canvas class="chart" id="ch-vol" width="520" height="200"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-h"><div><div class="card-t">Distribusi Status</div></div></div>
+            <canvas class="chart" id="ch-dist" width="520" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- B. PROFIL (semua pengguna) -->
+      <div class="sec user-sec" id="sec-profil">
+        <div class="sec-head">
+          <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <h2>Profil</h2>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-h"><div><div class="card-t">Data Akun</div></div></div>
+            <div class="kv"><span class="k">Username</span><span class="v" id="pf-user">–</span></div>
+            <div class="kv"><span class="k">Saldo</span><span class="v" id="pf-balance" style="color:var(--primary)">–</span></div>
+            <div class="kv"><span class="k">Peran</span><span class="v" id="pf-role">–</span></div>
+            <div class="field" style="margin-top:14px"><label>Nama Merchant (maks 25 huruf, tampil saat QRIS di-scan)</label>
+            <input type="text" id="pf-merchant" maxlength="25" placeholder="TOKO SAYA" style="text-transform:uppercase"></div>
+            <button class="btn btn-primary" id="btn-save-profile">Simpan Profil</button>
+          </div>
+          <div class="card">
+            <div class="card-h"><div><div class="card-t">QRIS Statis Saya</div><div class="card-t2">dengan nama merchant kamu — otomatis terbuat</div></div></div>
+            <div class="qr-box hidden" id="pf-qris-box">
+              <div id="pf-qris-holder"></div>
+            </div>
+            <p class="muted" id="pf-qris-empty">Atur nama merchant di atas lalu simpan untuk melihat QRIS statis kamu.</p>
+            <button class="btn btn-ghost btn-sm" id="btn-show-myqris" style="margin-top:8px">Tampilkan QRIS Saya</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- C. TOPUP (admin) -->
+      <div class="sec admin-sec" id="sec-topup">
+        <div class="sec-head">
+          <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg></span>
+          <h2>Topup Saldo</h2>
+        </div>
+        <div class="grid2">
+          <div>
+            <div class="card">
+              <div class="kv"><span class="k">Saldo saat ini</span><span class="v" id="balance" style="font-size:20px;color:var(--primary)">Rp0</span></div>
+            </div>
+            <div class="card" id="topup-form">
+              <div class="card-h"><div><div class="card-t">Nominal Topup</div><div class="card-t2">Minimal Rp1.000</div></div></div>
+              <div class="preset-grid">
+                <button class="preset" data-amt="10000">10rb</button>
+                <button class="preset" data-amt="25000">25rb</button>
+                <button class="preset" data-amt="50000">50rb</button>
+                <button class="preset" data-amt="100000">100rb</button>
+              </div>
+              <div class="field"><input type="number" id="amount" placeholder="Atau ketik nominal custom" min="1000"></div>
+              <div class="field"><label>Nama tampil di QRIS <span class="muted" style="font-weight:400">(opsional, maks 25 huruf)</span></label><input type="text" id="merchant-name" placeholder="cth: Budi Store" maxlength="25"></div>
+              <button class="btn btn-primary btn-block" id="btn-create">Buat Kode QRIS</button>
+              <div class="alert alert-info" style="margin:14px 0 0">Setiap transaksi mendapat kode unik 3 digit untuk identifikasi pembayaran otomatis.</div>
+            </div>
+            <div class="card hidden" id="qris-result">
+              <div class="steps">
+                <div class="step done">1. Buat QR</div>
+                <div class="step done">2. Bayar</div>
+                <div class="step" id="step-3">3. Konfirmasi</div>
+              </div>
+              <div class="qr-box"><img id="qr-img" alt="QRIS"></div>
+              <div class="pay-amount" id="qris-amount"></div>
+              <div class="pay-note" id="qris-merchant-note" style="display:none">a.n. <b id="qris-merchant-name"></b></div>
+              <div class="pay-note">Bayar <b>tepat</b> sesuai nominal di atas</div>
+              <div class="countdown" id="qris-timer"></div>
+              <button class="btn btn-ghost btn-block" id="btn-qr-dl" style="margin-bottom:8px">Unduh Gambar QR Code</button>
+              <div class="alert alert-warn">Buka <b>DANA / OVO / GoPay / m-banking</b> lalu scan QR dan bayar.</div>
+              <button class="btn btn-primary btn-block" id="btn-paid">Cek Status Pembayaran</button>
+              <button class="btn btn-ghost btn-block" id="btn-cancel-topup" style="margin-top:8px">Batalkan</button>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-h"><div><div class="card-t">Riwayat Topup Saya</div></div></div>
+              <div id="history"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- D. QRIS STATIS (admin: upload gambar; non-admin: catatan) -->
+      <div class="sec" id="sec-qris">
+        <div class="sec-head">
+          <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+          <h2>QRIS Statis</h2>
+        </div>
+        <div class="card admin-sec" id="qris-form">
+          <div class="card-h"><div><div class="card-t">Upload Foto QRIS</div><div class="card-t2">sistem otomatis membaca kode QR dari gambar</div></div></div>
+          <div class="field"><label>Foto QRIS (JPG/PNG)</label><input type="file" id="qris-photo" accept="image/*" style="padding:10px"></div>
+          <div class="hidden" id="qris-decode-result">
+            <div class="qr-box" id="qris-preview-box" style="display:none"><div id="qris-preview-holder"></div></div>
+            <div class="kv"><span class="k">Merchant</span><span class="v" id="qris-dec-merchant">–</span></div>
+            <div class="kv"><span class="k">Kota</span><span class="v" id="qris-dec-city">–</span></div>
+            <button class="btn btn-primary" id="btn-qris-save" style="margin-top:10px">Simpan QRIS Statis</button>
+          </div>
+          <div class="kv" style="margin-top:8px"><span class="k">Status saat ini</span><span class="v" id="qris-current">–</span></div>
+        </div>
+        <div class="card hidden" id="qris-nonadmin">
+          <div class="alert alert-note" style="margin:0">QRIS statis hanya dapat dibuat oleh admin. <b>Hubungi admin</b> jika membutuhkan QRIS statis.</div>
+        </div>
+      </div>
+
+      <!-- E. TRANSAKSI (admin) -->
+      <div class="sec admin-sec" id="sec-tx">
+        <div class="sec-head">
+          <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <h2>Transaksi</h2>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><div class="card-t">Semua Transaksi</div></div><button class="btn btn-ghost btn-sm" id="btn-tx-reload">Muat Ulang</button></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>ID</th><th>Waktu</th><th>Pengguna</th><th>Nominal</th><th>Status</th></tr></thead>
+            <tbody id="tx-body"><tr><td colspan="5" class="muted">Memuat…</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- G. DOKUMENTASI API (admin) -->
+      <div class="sec admin-sec" id="sec-api">
+        <div class="sec-head">
+          <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+          <h2>Dokumentasi API</h2>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><div class="card-t">Base URL &amp; Autentikasi</div></div></div>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Semua endpoint menerima <span class="mono">POST</span> dengan body JSON ke:</p>
+          <div class="code-box"><button class="copy-btn" data-copy="https://gateway.mxthz.xyz/api">Salin</button><pre>https://gateway.mxthz.xyz/api/&lt;endpoint&gt;</pre></div>
+          <p style="font-size:13px;color:var(--text2);margin:12px 0 6px">Endpoint user membutuhkan sesi login (cookie). Endpoint internal membutuhkan <span class="mono">secret</span> di body:</p>
+          <div class="code-box"><button class="copy-btn" data-copy='{ "secret": "SECRET_ANDA" }'>Salin</button><pre>{ "secret": "SECRET_ANDA" }</pre></div>
+        </div>
+        <div id="api-docs"></div>
+      </div>
+
+      <div class="footer">QRIS Gateway &mdash; pembayaran otomatis via QRIS</div>
+    </div><!-- /pg-app -->
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<!-- MODAL PENGATURAN -->
+<div class="modal-ov hidden" id="modal-settings">
+  <div class="modal">
+    <div class="modal-h"><h3>Pengaturan Akun</h3>
+      <button class="icon-btn" id="btn-modal-close" aria-label="Tutup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-h"><div><div class="card-t">Ubah Username</div></div></div>
+      <div class="field"><input type="text" id="set-username" placeholder="Username baru"></div>
+      <button class="btn btn-primary btn-block" id="btn-save-username">Simpan Username</button>
+    </div>
+    <div class="card" style="margin:0">
+      <div class="card-h"><div><div class="card-t">Ubah Password</div></div></div>
+      <div class="field"><input type="password" id="set-old" placeholder="Password lama"></div>
+      <div class="field"><input type="password" id="set-new" placeholder="Password baru (min 6 karakter)"></div>
+      <button class="btn btn-primary btn-block" id="btn-save-pass">Simpan Password</button>
+    </div>
+  </div>
+</div>
+<div id="toast-root"></div>
+
+<script>
+"use strict";
+/* ================= helpers ================= */
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+const state = { user: null, isAdmin: false, pollInt: null, timerInt: null };
+
+async function api(name, body) {
+  const r = await fetch('/api/' + name, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body || {})
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || j.ok === false) throw new Error(j.error || j.message || ('HTTP ' + r.status));
+  return j;
+}
+function rupiah(n) {
+  return 'Rp' + Number(n || 0).toLocaleString('id-ID');
+}
+function fdate(ts) {
+  if (!ts) return '–';
+  const d = new Date(Number(ts) > 1e12 ? Number(ts) : Number(ts) * 1000);
+  return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  $('#toast-root').appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+function stBadge(s) {
+  s = String(s || '').toLowerCase();
+  const cls = s === 'paid' || s === 'success' || s === 'approved' ? 'st-paid'
+    : (s === 'pending' || s === 'waiting' ? 'st-pending' : 'st-expired');
+  const lbl = s === 'paid' ? 'Berhasil' : s === 'pending' ? 'Pending'
+    : s === 'expired' ? 'Kedaluwarsa' : s === 'rejected' ? 'Ditolak' : esc(s);
+  return '<span class="status ' + cls + '">' + lbl + '</span>';
+}
+/* Render string QRIS ke holder: pakai lib qrcode, fallback ke api.qrserver.com */
+async function renderQR(holder, qrisString, merchantName) {
+  holder.innerHTML = '';
+  if (merchantName) {
+    const nm = document.createElement('div');
+    nm.className = 'qr-merchant'; nm.textContent = merchantName;
+    holder.appendChild(nm);
+  }
+  const box = document.createElement('div');
+  box.id = holder.id + '-box-inner';
+  holder.appendChild(box);
+  try {
+    if (window.QRCode && QRCode.toCanvas) {
+      const cv = document.createElement('canvas');
+      await QRCode.toCanvas(cv, qrisString, { width: 220, margin: 1 });
+      box.appendChild(cv);
+      return;
+    }
+  } catch (e) {}
+  const img = document.createElement('img');
+  img.alt = 'QRIS';
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(qrisString);
+  box.appendChild(img);
+}
+
+/* ================= auth & role ================= */
+function showLogin() {
+  $('#pg-login').classList.remove('hidden');
+  $('#pg-app').classList.add('hidden');
+  $('#pg-app').style.display='none';
+  $('#topbar').style.display='none';
+  $('#topbar-user').classList.add('hidden');
+  $('#topbar-user').style.display = 'none';
+}
+function showApp() {
+  $('#pg-login').classList.add('hidden');
+  $('#pg-app').classList.remove('hidden');
+  $('#pg-app').style.display='';
+  $('#topbar').style.display='';
+  $('#topbar-user').classList.remove('hidden');
+  $('#topbar-user').style.display = 'flex';
+}
+function applyRole() {
+  const adminSecs = $$('.admin-sec');
+  if (state.isAdmin) {
+    adminSecs.forEach(el => el.classList.remove('hidden'));
+    $$('.user-sec').forEach(el => el.classList.remove('hidden'));
+    $('#qris-form').classList.remove('hidden');
+    $('#qris-nonadmin').classList.add('hidden');
+    $('#no-access').classList.add('hidden');
+  } else {
+    // non-admin: tidak bisa lihat apapun
+    adminSecs.forEach(el => el.classList.add('hidden'));
+    $$('.user-sec').forEach(el => el.classList.add('hidden'));
+    $('#no-access').classList.remove('hidden');
+  }
+}
+async function boot() {
+  try {
+    const me = await api('me');
+    const u = me.user || me;
+    if (!u || !u.username || !u.id) throw new Error('no session');
+    state.user = u;
+    state.isAdmin = !!(u.is_admin || u.isAdmin || u.role === 'admin');
+    $('#user-name').textContent = u.username || 'Pengguna';
+    $('#user-av').textContent = (u.username || '?').charAt(0).toUpperCase();
+    showApp();
+    applyRole();
+    await loadDashboard();
+    await loadProfile();
+    if (state.isAdmin) { await loadAdminAll(); }
+  } catch (e) { showLogin(); }
+}
+async function doLogin() {
+  const u = $('#li-user').value.trim(), p = $('#li-pass').value;
+  $('#login-err').textContent = '';
+  if (!u || !p) { $('#login-err').textContent = 'Isi username dan password.'; return; }
+  try {
+    const r = await api('login', { username: u, password: p });
+    const usr = r.user || { username: u };
+    state.user = usr;
+    state.isAdmin = !!(usr.is_admin || usr.isAdmin || usr.role === 'admin');
+    $('#user-name').textContent = usr.username || u;
+    $('#user-av').textContent = (usr.username || u).charAt(0).toUpperCase();
+    $('#li-pass').value = '';
+    showApp();
+    applyRole();
+    await loadDashboard();
+    await loadProfile();
+    if (state.isAdmin) { await loadAdminAll(); }
+    toast('Login berhasil');
+  } catch (e) { $('#login-err').textContent = 'Login gagal: ' + e.message; }
+}
+async function doLogout() {
+  try { await api('logout'); } catch (e) {}
+  state.user = null; state.isAdmin = false;
+  showLogin();
+}
+
+/* ================= dashboard ================= */
+async function loadDashboard() {
+  try {
+    const s = await api('admin_stats');
+    const tt = s.total_tx ?? s.tx_total ?? 0;
+    const pd = s.paid_tx ?? s.tx_paid ?? 0;
+    const pn = s.pending_tx ?? s.tx_pending ?? 0;
+    const vol = s.total_volume ?? s.vol_total ?? 0;
+    $('#k-tx').textContent = tt;
+    $('#k-paid').textContent = pd;
+    $('#k-pending').textContent = pn;
+    $('#k-vol').textContent = rupiah(vol);
+    $('#k-vol24').textContent = '24 jam terakhir: ' + rupiah(s.today_volume ?? s.vol_24h ?? 0);
+    $('#k-rate').textContent = 'tingkat keberhasilan ' + (s.success_rate != null ? s.success_rate + '%' : (tt ? Math.round(pd / tt * 100) + '%' : '–'));
+    $('#dash-updated').textContent = '• diperbarui ' + new Date().toLocaleTimeString('id-ID');
+    try {
+      const ch = await api('admin_charts', { days: 7 });
+      const daily = ch.daily || [];
+      drawBars($('#ch-vol'), daily.map(d => ({ volume: d.volume, day: d.date })), '#3b82f6');
+    } catch (e2) { drawBars($('#ch-vol'), [], '#3b82f6'); }
+    drawDonut($('#ch-dist'), [
+      ['Berhasil', Number(pd), '#22c55e'],
+      ['Pending', Number(pn), '#f59e0b'],
+      ['Kedaluwarsa', Number(s.expired_tx ?? s.tx_expired ?? 0), '#ef4444']
+    ]);
+  } catch (e) { /* non-admin mungkin tidak punya akses stats; biarkan placeholder */ }
+}
+function drawBars(cv, data, color) {
+  if (!cv) return;
+  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+  const vals = data.map(x => Number(x.volume ?? x.value ?? 0));
+  const labels = data.map(x => x.day ?? x.label ?? '');
+  const max = Math.max(1, ...vals);
+  const n = Math.max(vals.length, 1), bw = Math.min(46, (W - 20) / n * 0.55), gap = (W - 20) / n;
+  ctx.fillStyle = '#5f6b84'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+  vals.forEach((v, i) => {
+    const h = Math.max(3, (v / max) * (H - 44));
+    const x = 10 + gap * i + (gap - bw) / 2, y = H - 24 - h;
+    ctx.fillStyle = color + 'cc';
+    ctx.beginPath(); ctx.roundRect(x, y, bw, h, 5); ctx.fill();
+    if (labels[i]) ctx.fillText(String(labels[i]).slice(0, 5), x + bw / 2, H - 8);
+  });
+  if (!vals.length) { ctx.fillStyle = '#5f6b84'; ctx.fillText('Belum ada data', W / 2, H / 2); }
+}
+function drawDonut(cv, parts) {
+  if (!cv) return;
+  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+  const total = parts.reduce((a, p) => a + p[1], 0);
+  const cx = W * 0.36, cy = H / 2, R = 64, r = 44;
+  if (!total) {
+    ctx.fillStyle = '#5f6b84'; ctx.textAlign = 'center'; ctx.font = '13px sans-serif';
+    ctx.fillText('Belum ada data', W / 2, H / 2); return;
+  }
+  let a0 = -Math.PI / 2;
+  parts.forEach(p => {
+    if (!p[1]) return;
+    const a1 = a0 + (p[1] / total) * Math.PI * 2;
+    ctx.beginPath(); ctx.arc(cx, cy, R, a0, a1); ctx.arc(cx, cy, r, a1, a0, true); ctx.closePath();
+    ctx.fillStyle = p[2]; ctx.fill(); a0 = a1;
+  });
+  ctx.fillStyle = '#e8edf5'; ctx.font = '700 22px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(String(total), cx, cy + 8);
+  ctx.textAlign = 'left';
+  const lx = cx + R + 24;
+  let ly = cy - (parts.length - 1) * 14;
+  parts.forEach(p => {
+    ctx.fillStyle = p[2];
+    ctx.beginPath(); ctx.arc(lx, ly - 4, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#9aa7bd'; ctx.font = '12px sans-serif';
+    ctx.fillText(p[0] + '  ' + p[1], lx + 14, ly);
+    ly += 28;
+  });
+}
+
+/* ================= profil ================= */
+async function loadProfile() {
+  try {
+    const p = await api('user_profile');
+    $('#pf-user').textContent = p.username || (state.user && state.user.username) || '–';
+    $('#pf-role').textContent = state.isAdmin ? 'Admin' : 'Pengguna';
+    $('#pf-merchant').value = p.merchant_name || '';
+    const bal = (state.user && state.user.balance != null) ? state.user.balance : null;
+    if (bal != null) $('#pf-balance').textContent = rupiah(bal);
+    else { try { const b = await api('balance_get'); $('#pf-balance').textContent = rupiah(b.balance ?? 0); } catch (e) {} }
+  } catch (e) {}
+}
+async function saveProfile() {
+  const mn = $('#pf-merchant').value.trim().toUpperCase();
+  const btn = $('#btn-save-profile'); btn.disabled = true;
+  try {
+    await api('user_profile', { merchant_name: mn });
+    toast('Profil tersimpan');
+    await loadProfile();
+  } catch (e) { toast('Gagal: ' + e.message); }
+  btn.disabled = false;
+}
+async function showMyQris() {
+  const btn = $('#btn-show-myqris'); btn.disabled = true;
+  try {
+    const r = await api('user_qris');
+    $('#pf-qris-empty').classList.add('hidden');
+    $('#pf-qris-box').classList.remove('hidden');
+    await renderQR($('#pf-qris-holder'), r.qris_string, r.merchant_name || '');
+  } catch (e) { toast('Gagal: ' + e.message); }
+  btn.disabled = false;
+}
+
+/* ================= topup ================= */
+let curTopup = null;
+function setAmtUI(v) {
+  $('#amount').value = v;
+  $$('.preset').forEach(b => b.classList.toggle('active', Number(b.dataset.amt) === Number(v)));
+}
+async function refreshBalance() {
+  try { const b = await api('balance_get'); $('#balance').textContent = rupiah(b.balance ?? b.saldo ?? 0); }
+  catch (e) {}
+}
+async function createTopup() {
+  const amount = Math.floor(Number($('#amount').value));
+  if (!amount || amount < 1000) { toast('Nominal minimal Rp1.000'); return; }
+  const btn = $('#btn-create'); btn.disabled = true;
+  try {
+    const r = await api('topup_create', { amount, merchant_name: $('#merchant-name').value.trim() || undefined });
+    curTopup = r;
+    $('#topup-form').classList.add('hidden');
+    $('#qris-result').classList.remove('hidden');
+    $('#qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encodeURIComponent(r.qris_string || r.qr || '');
+    $('#qris-amount').textContent = rupiah(r.total ?? amount);
+    if (r.merchant_name) { $('#qris-merchant-note').style.display = ''; $('#qris-merchant-name').textContent = r.merchant_name; }
+    else $('#qris-merchant-note').style.display = 'none';
+    startTimer(r.expires_at);
+    startPoll(r.topup_id ?? r.id);
+    $('#step-3').classList.remove('done');
+  } catch (e) { toast('Gagal: ' + e.message); }
+  btn.disabled = false;
+}
+function startTimer(expiresAt) {
+  clearInterval(state.timerInt);
+  const el = $('#qris-timer');
+  const end = Number(expiresAt) > 1e12 ? Number(expiresAt) : Number(expiresAt) * 1000;
+  const tick = () => {
+    const s = Math.max(0, Math.floor((end - Date.now()) / 1000));
+    el.textContent = 'Berlaku ' + String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+    if (s <= 0) { clearInterval(state.timerInt); stopPoll(); }
+  };
+  tick(); state.timerInt = setInterval(tick, 1000);
+}
+function startPoll(id) {
+  stopPoll();
+  state.pollInt = setInterval(async () => {
+    try {
+      const r = await api('topup_confirm', { topup_id: id });
+      if (r.status === 'paid') { onPaid(); }
+      else if (r.status === 'expired') { toast('QRIS kedaluwarsa'); resetTopupUI(); }
+    } catch (e) {}
+  }, 8000);
+}
+function stopPoll() { clearInterval(state.pollInt); clearInterval(state.timerInt); }
+async function confirmPaid() {
+  if (!curTopup) return;
+  try {
+    const r = await api('topup_confirm', { topup_id: curTopup.topup_id ?? curTopup.id });
+    if (r.status === 'paid') onPaid();
+    else toast('Belum ada pembayaran terdeteksi (' + r.status + ')');
+  } catch (e) { toast('Gagal: ' + e.message); }
+}
+function onPaid() {
+  stopPoll();
+  $('#step-3').classList.add('done');
+  toast('Pembayaran berhasil, saldo bertambah');
+  refreshBalance(); loadHistory(); resetTopupUI();
+}
+function resetTopupUI() {
+  stopPoll(); curTopup = null;
+  $('#qris-result').classList.add('hidden');
+  $('#topup-form').classList.remove('hidden');
+}
+async function loadHistory() {
+  try {
+    const r = await api('topup_list');
+    const items = r.items || r.topups || [];
+    $('#history').innerHTML = items.length ? items.slice(0, 10).map(t =>
+      '<div class="kv"><span class="k">' + fdate(t.created_at) + '</span>' +
+      '<span style="display:flex;gap:8px;align-items:center"><span class="v">' + rupiah(t.amount) + '</span>' + stBadge(t.status) + '</span></div>'
+    ).join('') : '<p class="muted" style="font-size:13px">Belum ada riwayat topup.</p>';
+  } catch (e) {}
+}
+
+/* ================= qris statis (admin, upload gambar) ================= */
+let decodedQris = '';
+async function decodeQrisPhoto() {
+  const f = $('#qris-photo').files[0];
+  if (!f) return;
+  $('#qris-decode-result').classList.add('hidden');
+  decodedQris = '';
+  const img = new Image();
+  img.onload = async function() {
+    try {
+      const cv = document.createElement('canvas');
+      // batasi ukuran agar decode cepat
+      const scale = Math.min(1, 1200 / Math.max(img.width, img.height));
+      cv.width = Math.floor(img.width * scale); cv.height = Math.floor(img.height * scale);
+      const ctx = cv.getContext('2d');
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      if (typeof jsQR === 'undefined') { toast('Library pembaca QR belum termuat'); return; }
+      const d = jsQR(ctx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height);
+      if (d && d.data) {
+        decodedQris = d.data.trim();
+        $('#qris-decode-result').classList.remove('hidden');
+        $('#qris-dec-merchant').textContent = '–';
+        $('#qris-dec-city').textContent = '–';
+        $('#qris-preview-box').style.display = '';
+        await renderQR($('#qris-preview-holder'), decodedQris, '');
+        toast('QR terbaca — periksa lalu simpan');
+      } else {
+        toast('QR tidak terbaca, coba foto lain yang lebih jelas');
+      }
+    } catch (e) { toast('Gagal membaca gambar: ' + e.message); }
+    URL.revokeObjectURL(img.src);
+  };
+  img.onerror = () => toast('File gambar tidak valid');
+  img.src = URL.createObjectURL(f);
+}
+async function saveQrisStatic() {
+  if (!decodedQris) { toast('Upload foto QRIS dulu'); return; }
+  const btn = $('#btn-qris-save'); btn.disabled = true;
+  try {
+    const r = await api('qris_config', { qris: decodedQris });
+    const m = r.merchant || {};
+    $('#qris-dec-merchant').textContent = m.name || '–';
+    $('#qris-dec-city').textContent = m.city || '–';
+    await loadQrisCurrent();
+    toast('QRIS statis tersimpan');
+  } catch (e) { toast('Gagal: ' + e.message); }
+  btn.disabled = false;
+}
+async function loadQrisCurrent() {
+  try {
+    const r = await api('qris_config', { get: true });
+    $('#qris-current').textContent = r.configured
+      ? 'Terhubung' + (r.merchant && r.merchant.name ? ' (' + r.merchant.name + ')' : '')
+      : 'Belum diset';
+  } catch (e) { $('#qris-current').textContent = '–'; }
+}
+
+/* ================= transaksi ================= */
+async function loadTx() {
+  try {
+    const r = await api('admin_transactions');
+    const items = r.items || r.transactions || [];
+    $('#tx-body').innerHTML = items.length ? items.map(t =>
+      '<tr><td class="mono">#' + esc(t.id) + '</td><td>' + fdate(t.created_at) + '</td>' +
+      '<td>' + esc(t.username || t.user || '–') + '</td>' +
+      '<td><b>' + rupiah(t.amount) + '</b></td><td>' + stBadge(t.status) + '</td></tr>'
+    ).join('') : '<tr><td colspan="5" class="muted">Belum ada transaksi.</td></tr>';
+  } catch (e) { $('#tx-body').innerHTML = '<tr><td colspan="5" class="muted">Gagal memuat.</td></tr>'; }
+}
+
+/* ================= tarik dana ================= */
+async function doWithdraw() {
+  const amount = Math.floor(Number($('#wd-amount').value));
+  if (!amount || amount < 10000) { toast('Nominal minimal Rp10.000'); return; }
+  const dest = $('#wd-dest').value, acc = $('#wd-account').value.trim(), name = $('#wd-name').value.trim();
+  if (!acc || !name) { toast('Lengkapi nomor dan nama akun tujuan'); return; }
+  const btn = $('#btn-withdraw'); btn.disabled = true;
+  try {
+    await api('withdraw_request', { amount, destination: dest, account: acc, account_name: name });
+    toast('Permintaan penarikan dikirim');
+    $('#wd-amount').value = ''; $('#wd-account').value = ''; $('#wd-name').value = '';
+    loadWithdraws();
+  } catch (e) { toast('Gagal: ' + e.message); }
+  btn.disabled = false;
+}
+async function loadWithdraws() {
+  try {
+    const r = await api('withdraw_list');
+    const items = r.items || r.withdraws || [];
+    $('#wd-history').innerHTML = items.length ? items.slice(0, 10).map(w =>
+      '<div class="kv"><span class="k">' + fdate(w.created_at) + '<br><span class="muted">' + esc(w.destination || '') + ' ' + esc(w.account || '') + '</span></span>' +
+      '<span style="display:flex;gap:8px;align-items:center"><span class="v">' + rupiah(w.amount) + '</span>' + stBadge(w.status) + '</span></div>'
+    ).join('') : '<p class="muted" style="font-size:13px">Belum ada penarikan.</p>';
+  } catch (e) {}
+}
+async function loadAdminAll() {
+  await Promise.all([refreshBalance(), loadHistory(), loadQrisCurrent(), loadTx(), loadWithdraws()]);
+}
+
+/* ================= dokumentasi api ================= */
+const API_DOCS = [
+  { title: 'Buat Topup (QRIS Dinamis)', ep: 'topup_create',
+    desc: 'Membuat transaksi topup dan mengembalikan string QRIS + total bayar (termasuk kode unik).',
+    ex: {
+      curl: 'curl -X POST https://gateway.mxthz.xyz/api/topup_create \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" \\\n  -d \'{"amount": 50000, "merchant_name": "Toko Saya"}\'',
+      js: 'const r = await fetch("https://gateway.mxthz.xyz/api/topup_create", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: JSON.stringify({ amount: 50000, merchant_name: "Toko Saya" })\n});\nconst data = await r.json();',
+      python: 'import requests\nr = requests.post(\n    "https://gateway.mxthz.xyz/api/topup_create",\n    json={"amount": 50000, "merchant_name": "Toko Saya"},\n    cookies={"gw_session": "SESI_ANDA"}\n)\ndata = r.json()',
+      php: '$ch = curl_init("https://gateway.mxthz.xyz/api/topup_create");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => json_encode(["amount" => 50000, "merchant_name" => "Toko Saya"])\n]);\n$data = json_decode(curl_exec($ch), true);'
+    },
+    resp: '{\n  "ok": true,\n  "topup_id": 123,\n  "qris_string": "000201010212...",\n  "total": 50123,\n  "unique_code": 123,\n  "expires_at": 1760361600\n}' },
+  { title: 'Cek Status Pembayaran', ep: 'topup_confirm',
+    desc: 'Mengecek apakah transaksi sudah dibayar. Panggil berulang (polling) hingga status "paid" atau "expired".',
+    ex: {
+      curl: 'curl -X POST https://gateway.mxthz.xyz/api/topup_confirm \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" \\\n  -d \'{"topup_id": 123}\'',
+      js: 'const r = await fetch("https://gateway.mxthz.xyz/api/topup_confirm", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: JSON.stringify({ topup_id: 123 })\n});\nconst data = await r.json();\n// data.status: "pending" | "paid" | "expired"',
+      python: 'r = requests.post(\n    "https://gateway.mxthz.xyz/api/topup_confirm",\n    json={"topup_id": 123},\n    cookies={"gw_session": "SESI_ANDA"}\n)\nprint(r.json()["status"])',
+      php: '$ch = curl_init("https://gateway.mxthz.xyz/api/topup_confirm");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => json_encode(["topup_id" => 123])\n]);\n$data = json_decode(curl_exec($ch), true);\necho $data["status"];'
+    },
+    resp: '{\n  "ok": true,\n  "status": "paid",\n  "amount": 50123,\n  "balance": 150123\n}' },
+  { title: 'Cek Saldo', ep: 'balance_get',
+    desc: 'Mengambil saldo akun saat ini.',
+    ex: {
+      curl: 'curl -X POST https://gateway.mxthz.xyz/api/balance_get \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" -d \'{}\'',
+      js: 'const r = await fetch("https://gateway.mxthz.xyz/api/balance_get", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: "{}"\n});\nconst { balance } = await r.json();',
+      python: 'r = requests.post(\n    "https://gateway.mxthz.xyz/api/balance_get",\n    json={},\n    cookies={"gw_session": "SESI_ANDA"}\n)\nprint(r.json()["balance"])',
+      php: '$ch = curl_init("https://gateway.mxthz.xyz/api/balance_get");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => "{}"\n]);\n$data = json_decode(curl_exec($ch), true);\necho $data["balance"];'
+    },
+    resp: '{\n  "ok": true,\n  "balance": 150123\n}' },
+  { title: 'Riwayat Transaksi', ep: 'topup_list',
+    desc: 'Mengambil daftar transaksi topup milik akun.',
+    ex: {
+      curl: 'curl -X POST https://gateway.mxthz.xyz/api/topup_list \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" -d \'{}\'',
+      js: 'const r = await fetch("https://gateway.mxthz.xyz/api/topup_list", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: "{}"\n});\nconst { items } = await r.json();',
+      python: 'r = requests.post(\n    "https://gateway.mxthz.xyz/api/topup_list",\n    json={},\n    cookies={"gw_session": "SESI_ANDA"}\n)\nfor t in r.json()["items"]:\n    print(t["id"], t["amount"], t["status"])',
+      php: '$ch = curl_init("https://gateway.mxthz.xyz/api/topup_list");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => "{}"\n]);\n$items = json_decode(curl_exec($ch), true)["items"];'
+    },
+    resp: '{\n  "ok": true,\n  "items": [\n    { "id": 123, "amount": 50123, "status": "paid", "created_at": 1760361500 },\n    { "id": 124, "amount": 25045, "status": "pending", "created_at": 1760361600 }\n  ]\n}' },
+  { title: 'Batalkan Topup', ep: 'topup_cancel',
+    desc: 'Membatalkan topup yang masih pending.',
+    ex: {
+      curl: `curl -X POST https://gateway.mxthz.xyz/api/topup_cancel \
+  -H "Content-Type: application/json" \
+  -d '{"topup_id": 123}'`,
+      js: `await fetch('https://gateway.mxthz.xyz/api/topup_cancel', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ topup_id: 123 })
+});`,
+      python: `import requests
+requests.post('https://gateway.mxthz.xyz/api/topup_cancel',
+  json={'topup_id': 123})`,
+      php: `$ch = curl_init('https://gateway.mxthz.xyz/api/topup_cancel');
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['topup_id' => 123]));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+curl_exec($ch);`
+    },
+    resp: '{\n  "ok": true,\n  "status": "cancelled"\n}' },
+  { title: 'Buat Topup via Secret (Server-to-Server)', ep: 'internal_create',
+    desc: 'Membuat topup untuk user lain via API secret. Untuk integrasi toko/bot.',
+    ex: {
+      curl: `curl -X POST https://gateway.mxthz.xyz/api/internal_create \
+  -H "Content-Type: application/json" \
+  -d '{"secret": "SECRET_ANDA", "telegram_id": 123456, "amount": 50000}'`,
+      js: `await fetch('https://gateway.mxthz.xyz/api/internal_create', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ secret: 'SECRET_ANDA', telegram_id: 123456, amount: 50000 })
+});`,
+      python: `import requests
+requests.post('https://gateway.mxthz.xyz/api/internal_create',
+  json={'secret': 'SECRET_ANDA', 'telegram_id': 123456, 'amount': 50000})`,
+      php: `$ch = curl_init('https://gateway.mxthz.xyz/api/internal_create');
+curl_setopt($ch, CURLOPT_POSTFIELDS,
+  json_encode(['secret' => 'SECRET_ANDA', 'telegram_id' => 123456, 'amount' => 50000]));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+curl_exec($ch);`
+    },
+    resp: '{\n  "ok": true,\n  "id": 123,\n  "qris_string": "00020101...",\n  "total": 50123,\n  "unique_code": 123\n}' },
+  { title: 'Cek Status via Secret (Server-to-Server)', ep: 'internal_status',
+    desc: 'Mengecek status topup via API secret.',
+    ex: {
+      curl: `curl -X POST https://gateway.mxthz.xyz/api/internal_status \
+  -H "Content-Type: application/json" \
+  -d '{"secret": "SECRET_ANDA", "id": 123}'`,
+      js: `await fetch('https://gateway.mxthz.xyz/api/internal_status', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ secret: 'SECRET_ANDA', id: 123 })
+});`,
+      python: `import requests
+requests.post('https://gateway.mxthz.xyz/api/internal_status',
+  json={'secret': 'SECRET_ANDA', 'id': 123})`,
+      php: `$ch = curl_init('https://gateway.mxthz.xyz/api/internal_status');
+curl_setopt($ch, CURLOPT_POSTFIELDS,
+  json_encode(['secret' => 'SECRET_ANDA', 'id' => 123]));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+curl_exec($ch);`
+    },
+    resp: '{\n  "ok": true,\n  "id": 123,\n  "status": "paid",\n  "amount": 50123\n}' },
+];
+const LANGS = [['curl','cURL'], ['js','JavaScript'], ['python','Python'], ['php','PHP']];
+let docLang = 'curl';
+function renderApiDocs() {
+  $('#api-docs').innerHTML = API_DOCS.map((d, i) =>
+    '<div class="card doc-block"><h4><span class="method">POST</span> ' + esc(d.title) +
+    ' <span class="mono">/api/' + esc(d.ep) + '</span></h4>' +
+    '<p style="font-size:13px;color:var(--text2);margin-bottom:10px">' + esc(d.desc) + '</p>' +
+    '<div class="code-tabs">' + LANGS.map(l =>
+      '<button class="code-tab' + (l[0] === docLang ? ' active' : '') + '" data-doc="' + i + '" data-lang="' + l[0] + '">' + l[1] + '</button>'
+    ).join('') + '</div>' +
+    '<div class="code-box"><button class="copy-btn" data-copy-idx="' + i + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Salin</button><pre id="doc-code-' + i + '">' + esc(d.ex[docLang]) + '</pre></div>' +
+    '<p style="font-size:12px;color:var(--text3);margin:10px 0 6px;font-weight:700">CONTOH RESPONSE</p>' +
+    '<div class="code-box"><pre>' + esc(d.resp) + '</pre></div></div>'
+  ).join('');
+  $$('.code-tab').forEach(b => b.addEventListener('click', () => {
+    docLang = b.dataset.lang; renderApiDocs();
+  }));
+  $$('#api-docs .copy-btn').forEach(b => b.addEventListener('click', () => {
+    const idx = Number(b.dataset.copyIdx);
+    copyText(API_DOCS[idx].ex[docLang]);
+  }));
+}
+function copyText(t) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t).then(() => toast('Disalin ke clipboard')).catch(() => toast('Gagal menyalin'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = t; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('Disalin ke clipboard'); } catch (e) { toast('Gagal menyalin'); }
+    ta.remove();
+  }
+}
+
+/* ================= modal pengaturan ================= */
+function openModal() { $('#modal-settings').classList.remove('hidden'); }
+function closeModal() { $('#modal-settings').classList.add('hidden'); }
+async function saveUsername() {
+  const v = $('#set-username').value.trim().toLowerCase();
+  if (!v) { toast('Isi username baru'); return; }
+  const btn = $('#btn-save-username'); btn.disabled = true;
+  try {
+    const r = await api('user_profile', { new_username: v });
+    const nu = r.username || v;
+    $('#user-name').textContent = nu; $('#user-av').textContent = nu.charAt(0).toUpperCase();
+    $('#pf-user').textContent = nu;
+    if (state.user) state.user.username = nu;
+    $('#set-username').value = ''; toast('Username diperbarui');
+  } catch (e) { toast('Gagal: ' + e.message); }
+  btn.disabled = false;
+}
+async function savePassword() {
+  const o = $('#set-old').value, n = $('#set-new').value;
+  if (!o) { toast('Isi password lama'); return; }
+  if (n.length < 6) { toast('Password baru minimal 6 karakter'); return; }
+  const btn = $('#btn-save-pass'); btn.disabled = true;
+  try {
+    await api('change_password', { old_password: o, new_password: n });
+    $('#set-old').value = ''; $('#set-new').value = '';
+    toast('Password diperbarui'); closeModal();
+  } catch (e) { toast('Gagal: ' + e.message); }
+  btn.disabled = false;
+}
+
+/* ================= events & boot ================= */
+document.addEventListener('DOMContentLoaded', () => {
+  $('#btn-login').addEventListener('click', doLogin);
+  $('#li-user').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  $('#li-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  $('#btn-logout').addEventListener('click', doLogout);
+  $('#btn-settings').addEventListener('click', openModal);
+  $('#btn-modal-close').addEventListener('click', closeModal);
+  $('#modal-settings').addEventListener('click', e => { if (e.target.id === 'modal-settings') closeModal(); });
+  $('#btn-save-username').addEventListener('click', saveUsername);
+  $('#btn-save-pass').addEventListener('click', savePassword);
+  $('#btn-save-profile').addEventListener('click', saveProfile);
+  $('#btn-show-myqris').addEventListener('click', showMyQris);
+  $$('.preset').forEach(b => b.addEventListener('click', () => setAmtUI(b.dataset.amt)));
+  $('#btn-create').addEventListener('click', createTopup);
+  $('#btn-paid').addEventListener('click', confirmPaid);
+  $('#btn-cancel-topup').addEventListener('click', resetTopupUI);
+  $('#btn-qr-dl').addEventListener('click', () => {
+    const src = $('#qr-img').src; if (src) window.open(src, '_blank');
+  });
+  $('#qris-photo').addEventListener('change', decodeQrisPhoto);
+  $('#btn-qris-save').addEventListener('click', saveQrisStatic);
+  $('#btn-tx-reload').addEventListener('click', loadTx);
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.copy-btn[data-copy]');
+    if (b) copyText(b.getAttribute('data-copy'));
+  });
+  renderApiDocs();
+  boot();
+});
+</script>
+</body>
+</html>
