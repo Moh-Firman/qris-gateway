@@ -52,7 +52,6 @@ QRIS Gateway adalah sistem pembayaran mandiri yang mengubah satu akun QRIS/DANA 
 
 **Tidak cocok untuk:**
 - Yang butuh settlement ke banyak rekening berbeda (satu akun DANA = satu tujuan)
-- Yang butuh nama merchant custom di aplikasi pembayaran (keterbatasan DANA)
 
 ---
 
@@ -310,8 +309,8 @@ print('Password direset')
 
 ## FAQ
 
-**Q: Apakah nama merchant custom tampil?**
-A: Ya. Nama merchant yang diisi saat buat topup akan **tampil di QRIS** dan terlihat saat user scan untuk bayar.
+**Q: Apakah nama merchant tampil di aplikasi pembayaran?**
+A: Tidak. Aplikasi pembayaran (DANA/OVO/GoPay) menampilkan nama terdaftar akun DANA Bisnis, bukan nama dari QR. Ini keterbatasan DANA.
 
 **Q: Bisa untuk banyak merchant?**
 A: Satu gateway = satu akun DANA tujuan. Untuk banyak merchant, setiap merchant butuh gateway + HP + akun DANA sendiri.
