@@ -45,6 +45,37 @@ def rate_limit(ip, max_req=10, window_sec=60):
         return True
 
 
+# Brute-force login: {key: [timestamps]}. key = "ip" atau "user:username"
+_login_fails = {}
+_login_lock = threading.Lock()
+_LOGIN_MAX = 5       # 5x salah ...
+_LOGIN_WINDOW = 300  # ... dalam 5 menit ...
+_LOGIN_BLOCK = 900   # ... = blokir 15 menit
+
+def _login_key(ip, username):
+    return "u:" + username.lower() if username else "ip:" + ip
+
+def check_login_allowed(ip, username):
+    now = time.time()
+    k = _login_key(ip, username)
+    with _login_lock:
+        arr = [t for t in _login_fails.get(k, []) if now - t < _LOGIN_WINDOW + _LOGIN_BLOCK]
+        _login_fails[k] = arr
+        # blokir bila 5 gagal dalam 5 menit terakhir
+        recent = [t for t in arr if now - t < _LOGIN_WINDOW]
+        return len(recent) < _LOGIN_MAX
+
+def _record_login_fail(username, ip):
+    with _login_lock:
+        for k in (_login_key(ip, username), _login_key(ip, "")):
+            _login_fails[k] = _login_fails.get(k, []) + [time.time()]
+
+def _clear_login_fails(username, ip):
+    with _login_lock:
+        _login_fails.pop(_login_key(ip, username), None)
+        _login_fails.pop(_login_key(ip, ""), None)
+
+
 def db():
     c = sqlite3.connect(DB_PATH, timeout=10)
     c.row_factory = sqlite3.Row
@@ -261,12 +292,18 @@ def destroy_session(cookie_header):
 def ep_login(p, u):
     username = str(p.get("username") or "").strip().lower()
     password = str(p.get("password") or "")
+    ip = p.get("_client_ip", "?")
     if not username or not password:
         raise EpError("Username dan password wajib.", "BAD_INPUT")
+    if not check_login_allowed(ip, username):
+        log.warning("LOGIN BLOKIR brute-force: user=%s ip=%s", username, ip)
+        raise EpError("Terlalu banyak percobaan gagal. Coba lagi 15 menit.", "LOCKED")
     with _db_lock, db() as c:
         r = c.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
-        if not r or hash_pw(password, r["salt"]) != r["pw_hash"]:
+        if not r or not hmac.compare_digest(hash_pw(password, r["salt"]), r["pw_hash"]):
+            _record_login_fail(username, ip)
             raise EpError("Username atau password salah.", "BAD_LOGIN")
+        _clear_login_fails(username, ip)
         user = dict(r)
     token = create_session(user["id"])
     return {"ok": True, "_set_cookie": f"gw_session={token}; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax",
@@ -510,7 +547,7 @@ def check_secret(payload):
     Secret per-user = hanya untuk user itu sendiri."""
     secret = str(payload.get("secret", "")).strip()
     expected = kv_get("internal_secret")
-    if expected and secret == expected:
+    if expected and hmac.compare_digest(secret, expected):
         return (True, None)
     if secret:
         with _db_lock, db() as c:
@@ -1150,6 +1187,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Frame-Options", "DENY")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+        self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'")
         self.send_header("Server", "QRIS-Gateway")
         if cookie:
             self.send_header("Set-Cookie", cookie)
@@ -1181,6 +1219,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(data)))
             self.send_header("X-Frame-Options", "DENY")
             self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'")
             self.send_header("Cache-Control", "no-store, max-age=0")
             self.end_headers()
             self.wfile.write(data)
@@ -1197,6 +1236,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(404, {"ok": False, "reason": "unknown endpoint"})
         try:
             length = int(self.headers.get("Content-Length", 0))
+            if length > 2 * 1024 * 1024:  # tolak body > 2MB (anti memory-exhaustion)
+                return self._json(413, {"ok": False, "error": "payload terlalu besar"})
             payload = json.loads(self.rfile.read(length) or b"{}")
         except Exception:
             return self._json(400, {"ok": False, "error": "bad json"})
