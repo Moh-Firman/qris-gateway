@@ -129,6 +129,23 @@ QRIS Gateway adalah sistem pembayaran mandiri yang mengubah satu akun QRIS/DANA 
 
 ---
 
+### 📱 Aplikasi DANA Notify
+
+Aplikasi Android yang membaca notifikasi pembayaran DANA dan meneruskannya ke gateway secara otomatis.
+
+<p align="center">
+  <img src="docs/app-dana-notify.jpg" width="320" alt="Aplikasi DANA Notify">
+</p>
+
+**Yang dilakukan aplikasi:**
+- Membaca notifikasi "Kamu menerima Rp..." dari aplikasi DANA
+- Mengirim nominal + waktu ke webhook gateway (`/api/mutasi_notify`)
+- Tanpa root, tanpa akses SMS — hanya izin baca notifikasi
+
+**Download:** [dana-notify.apk](https://github.com/Moh-Firman/qris-gateway/raw/main/dana-notify.apk)
+
+---
+
 ## Instalasi
 
 ### 1. Persiapan VPS
