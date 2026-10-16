@@ -1,8 +1,8 @@
-# QRIS Gateway
-
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Moh-Firman/qris-gateway/main/docs/profile.png" width="120" style="border-radius:50%">
+  <img src="docs/hero.png" width="100%" alt="QRIS Gateway">
 </p>
+
+<h1 align="center">QRIS Gateway</h1>
 
 <p align="center">
   <b>Gateway pembayaran QRIS otomatis untuk Indonesia</b><br>
@@ -10,16 +10,60 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Moh-Firman/qris-gateway/raw/main/dana-notify.apk">📱 Download APK DANA Notify</a>
+  <img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Platform-Android%20%7C%20Linux-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Platform">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
+  <img src="https://img.shields.io/badge/QRIS-Indonesia-ED1C24?style=flat-square" alt="QRIS">
+</p>
+
+<p align="center">
+  <a href="https://github.com/Moh-Firman/qris-gateway/raw/main/dana-notify.apk"><b>📱 Download APK DANA Notify</b></a>
 </p>
 
 ---
 
-## Daftar Isi
+## 🖼️ Cara Kerja
+
+<p align="center">
+  <img src="docs/flow.svg" width="100%" alt="Alur kerja QRIS Gateway">
+</p>
+
+```
+1. User buat topup Rp50.000 di dashboard
+         ↓
+2. Sistem generate total unik: Rp50.123 (kode unik: 123)
+         ↓
+3. User scan QR & bayar tepat Rp50.123 via DANA/OVO/GoPay/m-banking
+         ↓
+4. Aplikasi DANA Notify di HP mendeteksi notifikasi pembayaran
+         ↓
+5. Notifikasi dikirim ke gateway → cocokkan nominal
+         ↓
+6. Transaksi otomatis ditandai LUNAS ✅
+```
+
+**Kenapa kode unik?** Karena notifikasi DANA hanya berisi nominal tanpa nama pengirim. Kode unik 3 digit memastikan setiap pembayaran bisa dicocokkan ke transaksi yang benar.
+
+---
+
+## ✨ Fitur
+
+| Fitur | Keterangan |
+|-------|-----------|
+| 🔢 QRIS Dinamis | Setiap transaksi dapat kode unik 3 digit untuk deteksi otomatis |
+| ⚡ Auto-Detect | Saldo masuk otomatis setelah bayar, tanpa konfirmasi manual |
+| 🖼️ QRIS Statis | QR tetap untuk dipajang (khusus admin) |
+| ⏱️ Auto-Expire | Transaksi pending >30 menit otomatis kadaluarsa |
+| 📊 Dashboard | KPI, grafik volume 7 hari, distribusi status |
+| 🔔 Log Notifikasi | Semua notifikasi DANA tercatat dan bisa dipantau |
+| 🔌 API Lengkap | 7+ endpoint dengan contoh cURL, JS, Python, PHP |
+| 📱 Responsif | Tampilan menyesuaikan HP, tablet, desktop |
+
+---
+
+## 📦 Daftar Isi
 
 - [Tentang](#tentang)
-- [Fitur](#fitur)
-- [Cara Kerja](#cara-kerja)
 - [Kebutuhan](#kebutuhan)
 - [Instalasi](#instalasi)
   - [1. Persiapan VPS](#1-persiapan-vps)
@@ -28,10 +72,6 @@
   - [4. Install Aplikasi DANA Notify](#4-install-aplikasi-dana-notify)
   - [5. Konfigurasi Awal](#5-konfigurasi-awal)
 - [Penggunaan](#penggunaan)
-  - [Buat Topup](#buat-topup)
-  - [QRIS Statis](#qris-statis)
-  - [Lihat Transaksi](#lihat-transaksi)
-  - [Log Notifikasi](#log-notifikasi)
 - [Dokumentasi API](#dokumentasi-api)
 - [Keamanan](#keamanan)
 - [Troubleshooting](#troubleshooting)
@@ -56,44 +96,9 @@ QRIS Gateway adalah sistem pembayaran mandiri yang mengubah satu akun QRIS/DANA 
 
 ---
 
-## Fitur
-
-| Fitur | Keterangan |
-|-------|-----------|
-| QRIS Dinamis | Setiap transaksi dapat kode unik 3 digit untuk deteksi otomatis |
-| Auto-Detect | Saldo masuk otomatis setelah bayar, tanpa konfirmasi manual |
-| QRIS Statis | QR tetap untuk dipajang (khusus admin) |
-| Auto-Expire | Transaksi pending >30 menit otomatis kadaluarsa |
-| Dashboard | KPI, grafik volume 7 hari, distribusi status |
-| Log Notifikasi | Semua notifikasi DANA tercatat dan bisa dipantau |
-| API Lengkap | 7+ endpoint dengan contoh cURL, JS, Python, PHP |
-| Responsif | Tampilan menyesuaikan HP, tablet, desktop |
-
----
-
-## Cara Kerja
-
-```
-1. User buat topup Rp50.000 di dashboard
-         ↓
-2. Sistem generate total unik: Rp50.123 (kode unik: 123)
-         ↓
-3. User scan QR & bayar tepat Rp50.123 via DANA/OVO/GoPay/m-banking
-         ↓
-4. Aplikasi DANA Notify di HP mendeteksi notifikasi pembayaran
-         ↓
-5. Notifikasi dikirim ke gateway → cocokkan nominal
-         ↓
-6. Transaksi otomatis ditandai LUNAS ✅
-```
-
-**Kenapa kode unik?** Karena notifikasi DANA hanya berisi nominal tanpa nama pengirim. Kode unik 3 digit memastikan setiap pembayaran bisa dicocokkan ke transaksi yang benar.
-
----
-
 ## Kebutuhan
 
-### Server (VPS)
+### 🖥️ Server (VPS)
 
 - OS: Ubuntu 20.04+ / Debian 11+
 - RAM: minimal 512MB
@@ -101,7 +106,7 @@ QRIS Gateway adalah sistem pembayaran mandiri yang mengubah satu akun QRIS/DANA 
 - Port 8090 terbuka (atau via reverse proxy)
 - Domain + HTTPS (disarankan via Cloudflare)
 
-### HP Android (untuk deteksi otomatis)
+### 📱 HP Android (untuk deteksi otomatis)
 
 - Android 8.0+
 - Aplikasi DANA terinstall & login
@@ -185,7 +190,7 @@ gateway.example.com {
 
 ## Penggunaan
 
-### Buat Topup
+### 💰 Buat Topup
 
 1. Login sebagai admin
 2. Bagian **Topup Saldo** → pilih nominal atau isi custom
@@ -194,20 +199,20 @@ gateway.example.com {
 5. Bayar tepat sesuai total (termasuk kode unik)
 6. Status otomatis berubah jadi lunas dalam beberapa detik
 
-### QRIS Statis
+### 🖼️ QRIS Statis
 
 1. Bagian **QRIS Statis** → klik **Pilih File**
 2. Upload foto QRIS dari DANA Bisnis
 3. Sistem otomatis baca kode QR dari gambar
 4. Klik **Simpan**
 
-### Lihat Transaksi
+### 📋 Lihat Transaksi
 
 Bagian **Transaksi** menampilkan semua transaksi dengan filter status. Klik **Muat Ulang** untuk refresh.
 
 > **Catatan:** Kolom pengguna dikosongkan untuk privasi. Hanya nominal, waktu, dan status yang tampil.
 
-### Log Notifikasi
+### 🔔 Log Notifikasi
 
 Klik ikon **lonceng** di topbar untuk melihat semua notifikasi masuk dari aplikasi DANA Notify, termasuk yang tidak cocok dengan transaksi manapun.
 
