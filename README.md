@@ -260,10 +260,13 @@ Response:
 
 ## Keamanan
 
-- **Rate limiting**: 10 request/menit per IP
+- **Rate limiting**: 10 request/menit per IP (15/menit untuk endpoint sensitif)
+- **Anti brute-force**: login diblokir 15 menit setelah 5x gagal (per username + per IP)
+- **Timing-safe compare**: secret & password hash dicek dengan `hmac.compare_digest`
+- **Batas payload**: request >2MB ditolak (anti memory-exhaustion)
 - **Session**: cookie HttpOnly + Secure + SameSite
-- **Password**: hash dengan salt per-user
-- **Security headers**: X-Frame-Options, X-Content-Type-Options, dll
+- **Password**: PBKDF2-HMAC-SHA256, 100.000 iterasi, salt per-user
+- **Security headers**: X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Content-Security-Policy
 - **Anti-intip**: klik kanan, F12, Ctrl+U diblokir di frontend
 - **Role-based**: non-admin tidak bisa akses fitur apapun
 
