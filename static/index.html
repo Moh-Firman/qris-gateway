@@ -278,6 +278,37 @@ canvas.chart{width:100%;height:200px;display:block}
         </div>
       </div>
 
+      
+      <!-- B2. SECRET API -->
+      <div class="sec admin-sec" id="sec-secret">
+        <div class="sec-head">
+          <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <h2>Secret API</h2>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-h"><div><div class="card-t">Internal Secret</div><div class="card-t2">Untuk integrasi Mini App / server-to-server</div></div></div>
+            <div class="kv"><span class="k">Status</span><span class="v" id="is-status">–</span></div>
+            <div class="field" style="margin-top:12px"><label>Secret baru (min 16 karakter)</label>
+            <input type="text" id="is-new" placeholder="masukkan secret baru" autocomplete="off"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary btn-sm" id="btn-is-set">Simpan</button>
+              <button class="btn btn-ghost btn-sm" id="btn-is-reveal">Lihat</button>
+              <button class="btn btn-ghost btn-sm" id="btn-is-del" style="color:#f87171">Hapus</button>
+            </div>
+            <div class="code-box hidden" id="is-reveal-box" style="margin-top:12px"><pre id="is-reveal-text" style="word-break:break-all;white-space:pre-wrap"></pre></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><div><div class="card-t">API Secret Saya</div><div class="card-t2">Untuk akses API personal kamu</div></div></div>
+            <div class="code-box" style="margin-top:4px"><pre id="as-text" style="word-break:break-all;white-space:pre-wrap">–</pre></div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-ghost btn-sm" id="btn-as-show">Tampilkan</button>
+              <button class="btn btn-ghost btn-sm" id="btn-as-regen">Generate Baru</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- C. TOPUP (admin) -->
       <div class="sec admin-sec" id="sec-topup">
         <div class="sec-head">
@@ -685,6 +716,23 @@ async function showMyQris() {
   btn.disabled = false;
 }
 
+
+/* ================= secret api ================= */
+async function loadInternalSecret() {
+  try {
+    const r = await api('internal_secret', { check: true });
+    $('#is-status').textContent = r.set ? 'Terpasang' : 'Belum diset';
+    $('#is-status').style.color = r.set ? '#4ade80' : '#f87171';
+  } catch (e) { $('#is-status').textContent = '–'; }
+}
+async function loadApiSecret(show) {
+  try {
+    const r = await api('api_secret', show ?  : {});
+    // api_secret always returns secret; just display
+    $('#as-text').textContent = r.secret || '–';
+  } catch (e) { $('#as-text').textContent = 'Gagal: ' + e.message; }
+}
+
 /* ================= topup ================= */
 let curTopup = null;
 function setAmtUI(v) {
@@ -1020,6 +1068,30 @@ async function savePassword() {
 /* ================= events & boot ================= */
 document.addEventListener('DOMContentLoaded', () => {
   $('#btn-login').addEventListener('click', doLogin);
+  $('#btn-is-set').addEventListener('click', async () => {
+    const v = $('#is-new').value.trim();
+    if (v.length < 16) { toast('Secret minimal 16 karakter'); return; }
+    try { await api('internal_secret', { secret: v }); $('#is-new').value = ''; toast('Internal secret tersimpan'); await loadInternalSecret(); }
+    catch (e) { toast('Gagal: ' + e.message); }
+  });
+  $('#btn-is-reveal').addEventListener('click', async () => {
+    try {
+      const r = await api('internal_secret', { reveal: true });
+      $('#is-reveal-text').textContent = r.secret || '(kosong)';
+      $('#is-reveal-box').classList.remove('hidden');
+    } catch (e) { toast('Gagal: ' + e.message); }
+  });
+  $('#btn-is-del').addEventListener('click', async () => {
+    if (!confirm('Hapus internal secret?')) return;
+    try { await api('internal_secret', { del: true }); $('#is-reveal-box').classList.add('hidden'); toast('Dihapus'); await loadInternalSecret(); }
+    catch (e) { toast('Gagal: ' + e.message); }
+  });
+  $('#btn-as-show').addEventListener('click', () => loadApiSecret(true));
+  $('#btn-as-regen').addEventListener('click', async () => {
+    if (!confirm('Generate API secret baru? Yang lama jadi tidak berlaku.')) return;
+    try { const r = await api('api_secret', { rotate: true }); $('#as-text').textContent = r.secret || '–'; toast('API secret baru dibuat'); }
+    catch (e) { toast('Gagal: ' + e.message); }
+  });
   $('#li-user').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   $('#li-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   $('#btn-logout').addEventListener('click', doLogout);
