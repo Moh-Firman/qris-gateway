@@ -80,11 +80,6 @@ Login demo: username `demo` / password `demo123` (terisi otomatis).
 - [Tentang](#tentang)
 - [Kebutuhan](#kebutuhan)
 - [Instalasi](#instalasi)
-  - [1. Persiapan VPS](#1-persiapan-vps)
-  - [2. Install Gateway](#2-install-gateway)
-  - [3. Setup Domain & HTTPS](#3-setup-domain--https)
-  - [4. Install Aplikasi DANA Notify](#4-install-aplikasi-dana-notify)
-  - [5. Konfigurasi Awal](#5-konfigurasi-awal)
 - [Penggunaan](#penggunaan)
 - [Dokumentasi API](#dokumentasi-api)
 - [Keamanan](#keamanan)
@@ -148,8 +143,6 @@ Aplikasi Android yang membaca notifikasi pembayaran DANA dan meneruskannya ke ga
 
 ## Instalasi
 
-### ⚡ Install Otomatis (disarankan)
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Moh-Firman/qris-gateway/main/install.sh | sudo bash
 ```
@@ -160,84 +153,7 @@ Installer akan menanyakan **domain** kamu (misal: `eg.domain.com`):
 
 > Pastikan DNS A record domain sudah mengarah ke IP VPS sebelum install.
 
-### 🔧 Install Manual
-
-<details>
-<summary>Klik untuk langkah manual</summary>
-
-
-### 1. Persiapan VPS
-
-```bash
-# Update sistem
-sudo apt update && sudo apt upgrade -y
-
-# Install Python
-sudo apt install -y python3
-
-# Buat direktori
-sudo mkdir -p /opt/gateway/static
-```
-
-### 2. Install Gateway
-
-```bash
-# Clone repository
-git clone https://github.com/Moh-Firman/qris-gateway.git /tmp/qris-src
-
-# Copy file
-sudo cp /tmp/qris-src/gateway.py /opt/gateway/
-sudo cp /tmp/qris-src/static/index.html /opt/gateway/static/
-
-# Install systemd service
-sudo cp /tmp/qris-src/qris-gateway.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now qris-gateway
-
-# Cek status
-sudo systemctl status qris-gateway
-curl http://localhost:8090/api/health
-```
-
-### 3. Setup Domain & HTTPS
-
-**Opsi A: Cloudflare (disarankan)**
-
-1. Tambah domain ke Cloudflare
-2. Buat DNS A record: `gateway` → IP VPS (proxy ON/orange cloud)
-3. Cloudflare otomatis sediakan HTTPS
-
-**Opsi B: Caddy**
-
-```
-gateway.example.com {
-    reverse_proxy localhost:8090
-}
-```
-
-### 4. Install Aplikasi DANA Notify
-
-1. Download APK: [dana-notify.apk](https://github.com/Moh-Firman/qris-gateway/raw/main/dana-notify.apk)
-2. Install di HP Android (izinkan "install dari sumber tidak dikenal")
-3. Buka aplikasi, isi:
-   - **Webhook URL**: `https://gateway.example.com/api/mutasi_notify`
-   - **Secret**: samakan dengan secret di gateway (lihat konfigurasi)
-4. Berikan izin akses notifikasi saat diminta
-5. Tes dengan tombol "Test" di aplikasi — cek di dashboard bagian Notifikasi (ikon lonceng)
-
-### 5. Konfigurasi Awal
-
-1. Buka `https://gateway.example.com`
-2. Login dengan akun admin default:
-   - Username: `admin`
-   - Password: `admin123`
-3. **Segera ganti password** via ikon gear di topbar
-4. Upload foto QRIS statis di bagian **QRIS Statis**
-5. Atur nama merchant di **Profil**
-
 ---
-
-</details>
 
 ## Penggunaan
 
