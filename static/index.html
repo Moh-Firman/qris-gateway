@@ -373,7 +373,7 @@ canvas.chart{width:100%;height:200px;display:block}
         <div class="card">
           <div class="card-h"><div><div class="card-t">Base URL &amp; Autentikasi</div></div></div>
           <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Semua endpoint menerima <span class="mono">POST</span> dengan body JSON ke:</p>
-          <div class="code-box"><button class="copy-btn" data-copy="https://your-gateway.com/api">Salin</button><pre>https://your-gateway.com/api/&lt;endpoint&gt;</pre></div>
+          <div class="code-box"><button class="copy-btn" id="copy-base">Salin</button><pre><span class="dyn-base"></span>/api/&lt;endpoint&gt;</pre></div>
           <p style="font-size:13px;color:var(--text2);margin:12px 0 6px">Endpoint user membutuhkan sesi login (cookie). Endpoint internal membutuhkan <span class="mono">secret</span> di body:</p>
           <div class="code-box"><button class="copy-btn" data-copy='{ "secret": "SECRET_ANDA" }'>Salin</button><pre>{ "secret": "SECRET_ANDA" }</pre></div>
         </div>
@@ -846,54 +846,54 @@ const API_DOCS = [
   { title: 'Buat Topup (QRIS Dinamis)', ep: 'topup_create',
     desc: 'Membuat transaksi topup dan mengembalikan string QRIS + total bayar (termasuk kode unik).',
     ex: {
-      curl: 'curl -X POST https://your-gateway.com/api/topup_create \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" \\\n  -d \'{"amount": 50000, "merchant_name": "Toko Saya"}\'',
-      js: 'const r = await fetch("https://your-gateway.com/api/topup_create", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: JSON.stringify({ amount: 50000, merchant_name: "Toko Saya" })\n});\nconst data = await r.json();',
-      python: 'import requests\nr = requests.post(\n    "https://your-gateway.com/api/topup_create",\n    json={"amount": 50000, "merchant_name": "Toko Saya"},\n    cookies={"gw_session": "SESI_ANDA"}\n)\ndata = r.json()',
-      php: '$ch = curl_init("https://your-gateway.com/api/topup_create");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => json_encode(["amount" => 50000, "merchant_name" => "Toko Saya"])\n]);\n$data = json_decode(curl_exec($ch), true);'
+      curl: 'curl -X POST "+location.origin+"/api/topup_create \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" \\\n  -d \'{"amount": 50000, "merchant_name": "Toko Saya"}\'',
+      js: 'const r = await fetch(""+location.origin+"/api/topup_create", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: JSON.stringify({ amount: 50000, merchant_name: "Toko Saya" })\n});\nconst data = await r.json();',
+      python: 'import requests\nr = requests.post(\n    ""+location.origin+"/api/topup_create",\n    json={"amount": 50000, "merchant_name": "Toko Saya"},\n    cookies={"gw_session": "SESI_ANDA"}\n)\ndata = r.json()',
+      php: '$ch = curl_init(""+location.origin+"/api/topup_create");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => json_encode(["amount" => 50000, "merchant_name" => "Toko Saya"])\n]);\n$data = json_decode(curl_exec($ch), true);'
     },
     resp: '{\n  "ok": true,\n  "topup_id": 123,\n  "qris_string": "000201010212...",\n  "total": 50123,\n  "unique_code": 123,\n  "expires_at": 1760361600\n}' },
   { title: 'Cek Status Pembayaran', ep: 'topup_confirm',
     desc: 'Mengecek apakah transaksi sudah dibayar. Panggil berulang (polling) hingga status "paid" atau "expired".',
     ex: {
-      curl: 'curl -X POST https://your-gateway.com/api/topup_confirm \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" \\\n  -d \'{"topup_id": 123}\'',
-      js: 'const r = await fetch("https://your-gateway.com/api/topup_confirm", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: JSON.stringify({ topup_id: 123 })\n});\nconst data = await r.json();\n// data.status: "pending" | "paid" | "expired"',
-      python: 'r = requests.post(\n    "https://your-gateway.com/api/topup_confirm",\n    json={"topup_id": 123},\n    cookies={"gw_session": "SESI_ANDA"}\n)\nprint(r.json()["status"])',
-      php: '$ch = curl_init("https://your-gateway.com/api/topup_confirm");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => json_encode(["topup_id" => 123])\n]);\n$data = json_decode(curl_exec($ch), true);\necho $data["status"];'
+      curl: 'curl -X POST "+location.origin+"/api/topup_confirm \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" \\\n  -d \'{"topup_id": 123}\'',
+      js: 'const r = await fetch(""+location.origin+"/api/topup_confirm", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: JSON.stringify({ topup_id: 123 })\n});\nconst data = await r.json();\n// data.status: "pending" | "paid" | "expired"',
+      python: 'r = requests.post(\n    ""+location.origin+"/api/topup_confirm",\n    json={"topup_id": 123},\n    cookies={"gw_session": "SESI_ANDA"}\n)\nprint(r.json()["status"])',
+      php: '$ch = curl_init(""+location.origin+"/api/topup_confirm");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => json_encode(["topup_id" => 123])\n]);\n$data = json_decode(curl_exec($ch), true);\necho $data["status"];'
     },
     resp: '{\n  "ok": true,\n  "status": "paid",\n  "amount": 50123,\n  "balance": 150123\n}' },
   { title: 'Cek Saldo', ep: 'balance_get',
     desc: 'Mengambil saldo akun saat ini.',
     ex: {
-      curl: 'curl -X POST https://your-gateway.com/api/balance_get \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" -d \'{}\'',
-      js: 'const r = await fetch("https://your-gateway.com/api/balance_get", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: "{}"\n});\nconst { balance } = await r.json();',
-      python: 'r = requests.post(\n    "https://your-gateway.com/api/balance_get",\n    json={},\n    cookies={"gw_session": "SESI_ANDA"}\n)\nprint(r.json()["balance"])',
-      php: '$ch = curl_init("https://your-gateway.com/api/balance_get");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => "{}"\n]);\n$data = json_decode(curl_exec($ch), true);\necho $data["balance"];'
+      curl: 'curl -X POST "+location.origin+"/api/balance_get \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" -d \'{}\'',
+      js: 'const r = await fetch(""+location.origin+"/api/balance_get", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: "{}"\n});\nconst { balance } = await r.json();',
+      python: 'r = requests.post(\n    ""+location.origin+"/api/balance_get",\n    json={},\n    cookies={"gw_session": "SESI_ANDA"}\n)\nprint(r.json()["balance"])',
+      php: '$ch = curl_init(""+location.origin+"/api/balance_get");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => "{}"\n]);\n$data = json_decode(curl_exec($ch), true);\necho $data["balance"];'
     },
     resp: '{\n  "ok": true,\n  "balance": 150123\n}' },
   { title: 'Riwayat Transaksi', ep: 'topup_list',
     desc: 'Mengambil daftar transaksi topup milik akun.',
     ex: {
-      curl: 'curl -X POST https://your-gateway.com/api/topup_list \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" -d \'{}\'',
-      js: 'const r = await fetch("https://your-gateway.com/api/topup_list", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: "{}"\n});\nconst { items } = await r.json();',
-      python: 'r = requests.post(\n    "https://your-gateway.com/api/topup_list",\n    json={},\n    cookies={"gw_session": "SESI_ANDA"}\n)\nfor t in r.json()["items"]:\n    print(t["id"], t["amount"], t["status"])',
-      php: '$ch = curl_init("https://your-gateway.com/api/topup_list");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => "{}"\n]);\n$items = json_decode(curl_exec($ch), true)["items"];'
+      curl: 'curl -X POST "+location.origin+"/api/topup_list \\\n  -H "Content-Type: application/json" \\\n  -b "gw_session=SESI_ANDA" -d \'{}\'',
+      js: 'const r = await fetch(""+location.origin+"/api/topup_list", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  credentials: "include",\n  body: "{}"\n});\nconst { items } = await r.json();',
+      python: 'r = requests.post(\n    ""+location.origin+"/api/topup_list",\n    json={},\n    cookies={"gw_session": "SESI_ANDA"}\n)\nfor t in r.json()["items"]:\n    print(t["id"], t["amount"], t["status"])',
+      php: '$ch = curl_init(""+location.origin+"/api/topup_list");\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_HTTPHEADER => ["Content-Type: application/json"],\n  CURLOPT_COOKIE => "gw_session=SESI_ANDA",\n  CURLOPT_POSTFIELDS => "{}"\n]);\n$items = json_decode(curl_exec($ch), true)["items"];'
     },
     resp: '{\n  "ok": true,\n  "items": [\n    { "id": 123, "amount": 50123, "status": "paid", "created_at": 1760361500 },\n    { "id": 124, "amount": 25045, "status": "pending", "created_at": 1760361600 }\n  ]\n}' },
   { title: 'Batalkan Topup', ep: 'topup_cancel',
     desc: 'Membatalkan topup yang masih pending.',
     ex: {
-      curl: `curl -X POST https://your-gateway.com/api/topup_cancel \
+      curl: `curl -X POST "+location.origin+"/api/topup_cancel \
   -H "Content-Type: application/json" \
   -d '{"topup_id": 123}'`,
-      js: `await fetch('https://your-gateway.com/api/topup_cancel', {
+      js: `await fetch('"+location.origin+"/api/topup_cancel', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ topup_id: 123 })
 });`,
       python: `import requests
-requests.post('https://your-gateway.com/api/topup_cancel',
+requests.post('"+location.origin+"/api/topup_cancel',
   json={'topup_id': 123})`,
-      php: `$ch = curl_init('https://your-gateway.com/api/topup_cancel');
+      php: `$ch = curl_init('"+location.origin+"/api/topup_cancel');
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['topup_id' => 123]));
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 curl_exec($ch);`
@@ -902,18 +902,18 @@ curl_exec($ch);`
   { title: 'Buat Topup via Secret (Server-to-Server)', ep: 'internal_create',
     desc: 'Membuat topup untuk user lain via API secret. Untuk integrasi toko/bot.',
     ex: {
-      curl: `curl -X POST https://your-gateway.com/api/internal_create \
+      curl: `curl -X POST "+location.origin+"/api/internal_create \
   -H "Content-Type: application/json" \
   -d '{"secret": "SECRET_ANDA", "telegram_id": 123456, "amount": 50000}'`,
-      js: `await fetch('https://your-gateway.com/api/internal_create', {
+      js: `await fetch('"+location.origin+"/api/internal_create', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ secret: 'SECRET_ANDA', telegram_id: 123456, amount: 50000 })
 });`,
       python: `import requests
-requests.post('https://your-gateway.com/api/internal_create',
+requests.post('"+location.origin+"/api/internal_create',
   json={'secret': 'SECRET_ANDA', 'telegram_id': 123456, 'amount': 50000})`,
-      php: `$ch = curl_init('https://your-gateway.com/api/internal_create');
+      php: `$ch = curl_init('"+location.origin+"/api/internal_create');
 curl_setopt($ch, CURLOPT_POSTFIELDS,
   json_encode(['secret' => 'SECRET_ANDA', 'telegram_id' => 123456, 'amount' => 50000]));
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
@@ -923,18 +923,18 @@ curl_exec($ch);`
   { title: 'Cek Status via Secret (Server-to-Server)', ep: 'internal_status',
     desc: 'Mengecek status topup via API secret.',
     ex: {
-      curl: `curl -X POST https://your-gateway.com/api/internal_status \
+      curl: `curl -X POST "+location.origin+"/api/internal_status \
   -H "Content-Type: application/json" \
   -d '{"secret": "SECRET_ANDA", "id": 123}'`,
-      js: `await fetch('https://your-gateway.com/api/internal_status', {
+      js: `await fetch('"+location.origin+"/api/internal_status', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ secret: 'SECRET_ANDA', id: 123 })
 });`,
       python: `import requests
-requests.post('https://your-gateway.com/api/internal_status',
+requests.post('"+location.origin+"/api/internal_status',
   json={'secret': 'SECRET_ANDA', 'id': 123})`,
-      php: `$ch = curl_init('https://your-gateway.com/api/internal_status');
+      php: `$ch = curl_init('"+location.origin+"/api/internal_status');
 curl_setopt($ch, CURLOPT_POSTFIELDS,
   json_encode(['secret' => 'SECRET_ANDA', 'id' => 123]));
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
@@ -1051,6 +1051,14 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
   }
 });
+</script>
+<script>
+(function(){
+  var o = location.origin;
+  document.querySelectorAll(".dyn-base").forEach(function(e){ e.textContent = o; });
+  var b = document.getElementById("copy-base");
+  if (b) b.setAttribute("data-copy", o + "/api");
+})();
 </script>
 </body>
 </html>
