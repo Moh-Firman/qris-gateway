@@ -725,10 +725,9 @@ async function loadInternalSecret() {
     $('#is-status').style.color = r.set ? '#4ade80' : '#f87171';
   } catch (e) { $('#is-status').textContent = '–'; }
 }
-async function loadApiSecret(show) {
+async function loadApiSecret() {
   try {
-    const r = await api('api_secret', show ?  : {});
-    // api_secret always returns secret; just display
+    const r = await api('api_secret', {});
     $('#as-text').textContent = r.secret || '–';
   } catch (e) { $('#as-text').textContent = 'Gagal: ' + e.message; }
 }
@@ -1086,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try { await api('internal_secret', { del: true }); $('#is-reveal-box').classList.add('hidden'); toast('Dihapus'); await loadInternalSecret(); }
     catch (e) { toast('Gagal: ' + e.message); }
   });
-  $('#btn-as-show').addEventListener('click', () => loadApiSecret(true));
+  $('#btn-as-show').addEventListener('click', () => loadApiSecret());
   $('#btn-as-regen').addEventListener('click', async () => {
     if (!confirm('Generate API secret baru? Yang lama jadi tidak berlaku.')) return;
     try { const r = await api('api_secret', { rotate: true }); $('#as-text').textContent = r.secret || '–'; toast('API secret baru dibuat'); }
