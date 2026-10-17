@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QRIS Gateway</title>
-<link rel="icon" type="image/webp" href="/logo.webp">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2064%2064%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%22qg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%2264%22%20y2%3D%2264%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23F5222D%22/%3E%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23A80E13%22/%3E%20%3C/linearGradient%3E%20%3C/defs%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%20fill%3D%22url%28%23qg%29%22/%3E%20%3Crect%20x%3D%2213%22%20y%3D%2213%22%20width%3D%2217%22%20height%3D%2217%22%20rx%3D%224%22%20fill%3D%22%23fff%22/%3E%20%3Crect%20x%3D%2234%22%20y%3D%2213%22%20width%3D%2217%22%20height%3D%2217%22%20rx%3D%224%22%20fill%3D%22%23fff%22/%3E%20%3Crect%20x%3D%2213%22%20y%3D%2234%22%20width%3D%2217%22%20height%3D%2217%22%20rx%3D%224%22%20fill%3D%22%23fff%22/%3E%20%3Crect%20x%3D%2217.5%22%20y%3D%2217.5%22%20width%3D%228%22%20height%3D%228%22%20rx%3D%222%22%20fill%3D%22%23D31119%22/%3E%20%3Crect%20x%3D%2238.5%22%20y%3D%2217.5%22%20width%3D%228%22%20height%3D%228%22%20rx%3D%222%22%20fill%3D%22%23D31119%22/%3E%20%3Crect%20x%3D%2217.5%22%20y%3D%2238.5%22%20width%3D%228%22%20height%3D%228%22%20rx%3D%222%22%20fill%3D%22%23D31119%22/%3E%20%3Crect%20x%3D%2236%22%20y%3D%2236%22%20width%3D%226.5%22%20height%3D%226.5%22%20rx%3D%222%22%20fill%3D%22%23fff%22/%3E%20%3Crect%20x%3D%2244.5%22%20y%3D%2244.5%22%20width%3D%226.5%22%20height%3D%226.5%22%20rx%3D%222%22%20fill%3D%22%23fff%22/%3E%20%3Crect%20x%3D%2236%22%20y%3D%2244.5%22%20width%3D%226.5%22%20height%3D%226.5%22%20rx%3D%222%22%20fill%3D%22%23fff%22%20opacity%3D%22.65%22/%3E%20%3C/svg%3E">
 <style>
 :root{
   --bg:#0b0f17; --surface:#111827; --surface2:#1a2333; --border:#243044;
@@ -20,7 +20,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
 .topbar-in{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:12px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
-.brand-img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+.brand-img{width:36px;height:36px;border-radius:10px;flex-shrink:0}
 .brand-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--primary),#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
 .live-pill{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--ok);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);padding:4px 10px;border-radius:20px}
 .live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
@@ -184,7 +184,7 @@ canvas.chart{width:100%;height:200px;display:block}
 <body>
 <div class="app">
   <div class="topbar" id="topbar" style="display:none"><div class="topbar-in">
-    <div class="brand"><img src="/logo.webp" alt="Logo" class="brand-img"><span>QRIS Gateway</span></div>
+    <div class="brand"><svg class="brand-img" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"> <defs> <linearGradient id="qg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"> <stop offset="0" stop-color="#F5222D"/> <stop offset="1" stop-color="#A80E13"/> </linearGradient> </defs> <rect width="64" height="64" rx="15" fill="url(#qg)"/> <rect x="13" y="13" width="17" height="17" rx="4" fill="#fff"/> <rect x="34" y="13" width="17" height="17" rx="4" fill="#fff"/> <rect x="13" y="34" width="17" height="17" rx="4" fill="#fff"/> <rect x="17.5" y="17.5" width="8" height="8" rx="2" fill="#D31119"/> <rect x="38.5" y="17.5" width="8" height="8" rx="2" fill="#D31119"/> <rect x="17.5" y="38.5" width="8" height="8" rx="2" fill="#D31119"/> <rect x="36" y="36" width="6.5" height="6.5" rx="2" fill="#fff"/> <rect x="44.5" y="44.5" width="6.5" height="6.5" rx="2" fill="#fff"/> <rect x="36" y="44.5" width="6.5" height="6.5" rx="2" fill="#fff" opacity=".65"/> </svg><span>QRIS Gateway</span></div>
     <div class="live-pill"><span class="live-dot"></span>Live</div>
     <div class="topbar-sp"></div>
     <div id="topbar-user" class="hidden" style="display:none;align-items:center;gap:8px">

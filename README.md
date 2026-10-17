@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/hero.jpg" width="100%" alt="QRIS Gateway">
+  <img src="docs/logo.svg" width="120" alt="QRIS Gateway">
 </p>
 
 <h1 align="center">QRIS Gateway</h1>
