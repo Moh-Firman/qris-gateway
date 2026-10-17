@@ -218,7 +218,7 @@ def make_dynamic_qris(static_qris, amount, merchant_name=None):
     tlv["01"] = "12"
     tlv["54"] = str(round(amount))
     if merchant_name:
-        tlv["59"] = str(merchant_name).strip()[:25].upper()
+        tlv["59"] = str(merchant_name).strip()[:25]
     tlv.pop("63", None)
     payload = "".join(_build_tlv(k, tlv[k]) for k in sorted(tlv, key=int))
     with_crc = payload + "6304"
