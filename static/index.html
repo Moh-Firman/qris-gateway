@@ -287,7 +287,8 @@ canvas.chart{width:100%;height:200px;display:block}
         </div>
         <div class="grid2">
           <div class="card">
-            <div class="card-h"><div><div class="card-t">Internal Secret</div><div class="card-t2">Untuk integrasi Mini App / server-to-server</div></div></div>
+            <div class="card-h"><div><div class="card-t">Internal Secret</div><div class="card-t2">Kunci penghubung Mini App / bot ke gateway</div></div></div>
+            <p class="muted" style="font-size:12px;margin:8px 0 0">Secret ini dipakai aplikasi kamu (misal Mini App Store) saat meminta gateway membuatkan QRIS. Gateway hanya melayani request yang membawa secret yang cocok — jadi orang lain tidak bisa memakai gateway-mu. <b>Secret harus sama persis</b> di dashboard ini dan di pengaturan aplikasi kamu.</p>
             <div class="kv"><span class="k">Status</span><span class="v" id="is-status">–</span></div>
             <div class="field" style="margin-top:12px"><label>Secret baru (min 16 karakter)</label>
             <input type="text" id="is-new" placeholder="masukkan secret baru" autocomplete="off"></div>
@@ -299,7 +300,8 @@ canvas.chart{width:100%;height:200px;display:block}
             <div class="code-box hidden" id="is-reveal-box" style="margin-top:12px"><button class="copy-btn" id="btn-is-copy">Salin</button><pre id="is-reveal-text" style="word-break:break-all;white-space:pre-wrap"></pre></div>
           </div>
           <div class="card">
-            <div class="card-h"><div><div class="card-t">API Secret Saya</div><div class="card-t2">Untuk akses API personal kamu</div></div></div>
+            <div class="card-h"><div><div class="card-t">API Secret Saya</div><div class="card-t2">Kunci akses API untuk akun kamu</div></div></div>
+            <p class="muted" style="font-size:12px;margin:8px 0 0">Secret ini dipakai saat kamu memanggil API gateway sebagai user (misal cek saldo, buat topup via script). Jangan bagikan ke orang lain. Kalau bocor, klik <b>Generate Baru</b> — secret lama otomatis tidak berlaku.</p>
             <div class="code-box" style="margin-top:4px"><button class="copy-btn" id="btn-as-copy">Salin</button><pre id="as-text" style="word-break:break-all;white-space:pre-wrap">–</pre></div>
             <div style="display:flex;gap:8px;margin-top:12px">
               <button class="btn btn-ghost btn-sm" id="btn-as-show">Tampilkan</button>
