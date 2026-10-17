@@ -1015,6 +1015,27 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 curl_exec($ch);`
     },
     resp: '{\n  "ok": true,\n  "id": 123,\n  "status": "paid",\n  "amount": 50123\n}' },
+  { title: 'Notifikasi Mutasi DANA (Webhook)', ep: 'mutasi_notify',
+    desc: 'Menerima notifikasi pembayaran dari aplikasi DANA Notify. Otomatis mencocokkan dengan topup pending dan mengkredit saldo.',
+    ex: {
+      curl: `curl -X POST "+location.origin+"/api/mutasi_notify \
+  -H "Content-Type: application/json" \
+  -d '{"secret": "SECRET_ANDA", "amount": 50000, "text": "DANA - Transfer masuk"}'`,
+      js: `await fetch('"+location.origin+"/api/mutasi_notify', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ secret: 'SECRET_ANDA', amount: 50000, text: 'DANA - Transfer masuk' })
+});`,
+      python: `import requests
+requests.post('"+location.origin+"/api/mutasi_notify',
+  json={'secret': 'SECRET_ANDA', 'amount': 50000, 'text': 'DANA - Transfer masuk'})`,
+      php: `$ch = curl_init('"+location.origin+"/api/mutasi_notify');
+curl_setopt($ch, CURLOPT_POSTFIELDS,
+  json_encode(['secret' => 'SECRET_ANDA', 'amount' => 50000, 'text' => 'DANA - Transfer masuk']));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+curl_exec($ch);`
+    },
+    resp: '{\n  "ok": true,\n  "matched": true,\n  "topup_id": 123\n}' },
 ];
 const LANGS = [['curl','cURL'], ['js','JavaScript'], ['python','Python'], ['php','PHP']];
 let docLang = 'curl';
