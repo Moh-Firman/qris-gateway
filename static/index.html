@@ -1,4 +1,4 @@
-successfully downloaded text file (SHA: 318c131579b98fb105489add0ac66f8dd295e361)","type":"text"},{"resource":{"mimeType":"text/html; charset=utf-8","text":"<!DOCTYPE html>
+successfully downloaded text file (SHA: 9cb39c45abc8db9c5bffed4799581e76dd33f2a5)","type":"text"},{"resource":{"mimeType":"text/plain; charset=utf-8","text":"successfully downloaded text file (SHA: 318c131579b98fb105489add0ac66f8dd295e361)","type":"text"},{"resource":{"mimeType":"text/html; charset=utf-8","text":"<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -216,7 +216,7 @@ canvas.chart{width:100%;height:200px;display:block}
           <div class="field"><input type="password" id="li-pass" placeholder="Password" autocomplete="current-password"></div>
           <div class="login-err" id="login-err"></div>
           <button class="login-btn" id="btn-login">Login</button>
-          <div class="login-hint">Login default: <code>admin</code> / <code>admin123</code> â segera ganti setelah masuk.</div>
+          <div class="login-hint">Login default: <code>admin</code> / <code>admin123</code> Ã¢ÂÂ segera ganti setelah masuk.</div>
         </div>
       </div>
     </div>
@@ -234,10 +234,10 @@ canvas.chart{width:100%;height:200px;display:block}
         <div class="page-title">Dashboard</div>
         <div class="page-sub">Ringkasan performa gateway <span id="dash-updated" class="muted"></span></div>
         <div class="kpis">
-          <div class="kpi"><div class="kpi-lbl">Total Transaksi</div><div class="kpi-val" id="k-tx">â</div><div class="kpi-sub" id="k-tx-sub">semua status</div></div>
-          <div class="kpi"><div class="kpi-lbl">Berhasil</div><div class="kpi-val ok" id="k-paid">â</div><div class="kpi-sub" id="k-rate">tingkat keberhasilan â</div></div>
-          <div class="kpi"><div class="kpi-lbl">Pending</div><div class="kpi-val warn" id="k-pending">â</div><div class="kpi-sub">menunggu pembayaran</div></div>
-          <div class="kpi"><div class="kpi-lbl">Volume</div><div class="kpi-val primary" id="k-vol">â</div><div class="kpi-sub" id="k-vol24">24 jam terakhir: â</div></div>
+          <div class="kpi"><div class="kpi-lbl">Total Transaksi</div><div class="kpi-val" id="k-tx">Ã¢ÂÂ</div><div class="kpi-sub" id="k-tx-sub">semua status</div></div>
+          <div class="kpi"><div class="kpi-lbl">Berhasil</div><div class="kpi-val ok" id="k-paid">Ã¢ÂÂ</div><div class="kpi-sub" id="k-rate">tingkat keberhasilan Ã¢ÂÂ</div></div>
+          <div class="kpi"><div class="kpi-lbl">Pending</div><div class="kpi-val warn" id="k-pending">Ã¢ÂÂ</div><div class="kpi-sub">menunggu pembayaran</div></div>
+          <div class="kpi"><div class="kpi-lbl">Volume</div><div class="kpi-val primary" id="k-vol">Ã¢ÂÂ</div><div class="kpi-sub" id="k-vol24">24 jam terakhir: Ã¢ÂÂ</div></div>
         </div>
         <div class="grid2">
           <div class="card">
@@ -260,15 +260,15 @@ canvas.chart{width:100%;height:200px;display:block}
         <div class="grid2">
           <div class="card">
             <div class="card-h"><div><div class="card-t">Data Akun</div></div></div>
-            <div class="kv"><span class="k">Username</span><span class="v" id="pf-user">â</span></div>
-            <div class="kv"><span class="k">Saldo</span><span class="v" id="pf-balance" style="color:var(--primary)">â</span></div>
-            <div class="kv"><span class="k">Peran</span><span class="v" id="pf-role">â</span></div>
+            <div class="kv"><span class="k">Username</span><span class="v" id="pf-user">Ã¢ÂÂ</span></div>
+            <div class="kv"><span class="k">Saldo</span><span class="v" id="pf-balance" style="color:var(--primary)">Ã¢ÂÂ</span></div>
+            <div class="kv"><span class="k">Peran</span><span class="v" id="pf-role">Ã¢ÂÂ</span></div>
             <div class="field" style="margin-top:14px"><label>Nama Merchant (maks 25 huruf, tampil saat QRIS di-scan)</label>
             <input type="text" id="pf-merchant" maxlength="25" placeholder="Toko Saya"></div>
             <button class="btn btn-primary" id="btn-save-profile">Simpan Profil</button>
           </div>
           <div class="card">
-            <div class="card-h"><div><div class="card-t">QRIS Statis Saya</div><div class="card-t2">dengan nama merchant kamu â otomatis terbuat</div></div></div>
+            <div class="card-h"><div><div class="card-t">QRIS Statis Saya</div><div class="card-t2">dengan nama merchant kamu Ã¢ÂÂ otomatis terbuat</div></div></div>
             <div class="qr-box hidden" id="pf-qris-box">
               <div id="pf-qris-holder"></div>
             </div>
@@ -288,12 +288,10 @@ canvas.chart{width:100%;height:200px;display:block}
         <div class="grid2">
           <div class="card">
             <div class="card-h"><div><div class="card-t">Internal Secret</div><div class="card-t2">Kunci penghubung Mini App / bot ke gateway</div></div></div>
-            <p class="muted" style="font-size:12px;margin:8px 0 0">Secret ini dipakai aplikasi kamu (misal Mini App Store) saat meminta gateway membuatkan QRIS. Gateway hanya melayani request yang membawa secret yang cocok â jadi orang lain tidak bisa memakai gateway-mu. <b>Secret harus sama persis</b> di dashboard ini dan di pengaturan aplikasi kamu.</p>
-            <div class="kv"><span class="k">Status</span><span class="v" id="is-status">â</span></div>
-            <div class="field" style="margin-top:12px"><label>Secret baru (min 16 karakter)</label>
-            <input type="text" id="is-new" placeholder="masukkan secret baru" autocomplete="off"></div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn btn-primary btn-sm" id="btn-is-set">Simpan</button>
+            <p class="muted" style="font-size:12px;margin:8px 0 0">Secret ini dipakai aplikasi kamu (misal Mini App Store) saat meminta gateway membuatkan QRIS. Gateway hanya melayani request yang membawa secret yang cocok Ã¢ÂÂ jadi orang lain tidak bisa memakai gateway-mu. <b>Secret harus sama persis</b> di dashboard ini dan di pengaturan aplikasi kamu.</p>
+            <div class="kv"><span class="k">Status</span><span class="v" id="is-status">Ã¢ÂÂ</span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn btn-primary btn-sm" id="btn-is-gen">Generate Baru</button>
               <button class="btn btn-ghost btn-sm" id="btn-is-reveal">Lihat</button>
               <button class="btn btn-ghost btn-sm" id="btn-is-del" style="color:#f87171">Hapus</button>
             </div>
@@ -363,11 +361,11 @@ canvas.chart{width:100%;height:200px;display:block}
           <div class="field"><label>Foto QRIS (JPG/PNG)</label><input type="file" id="qris-photo" accept="image/*" style="padding:10px"></div>
           <div class="hidden" id="qris-decode-result">
             <div class="qr-box" id="qris-preview-box" style="display:none"><div id="qris-preview-holder"></div></div>
-            <div class="kv"><span class="k">Merchant</span><span class="v" id="qris-dec-merchant">â</span></div>
-            <div class="kv"><span class="k">Kota</span><span class="v" id="qris-dec-city">â</span></div>
+            <div class="kv"><span class="k">Merchant</span><span class="v" id="qris-dec-merchant">Ã¢ÂÂ</span></div>
+            <div class="kv"><span class="k">Kota</span><span class="v" id="qris-dec-city">Ã¢ÂÂ</span></div>
             <button class="btn btn-primary" id="btn-qris-save" style="margin-top:10px">Simpan QRIS Statis</button>
           </div>
-          <div class="kv" style="margin-top:8px"><span class="k">Status saat ini</span><span class="v" id="qris-current">â</span></div>
+          <div class="kv" style="margin-top:8px"><span class="k">Status saat ini</span><span class="v" id="qris-current">Ã¢ÂÂ</span></div>
         </div>
         <div class="card hidden" id="qris-nonadmin">
           <div class="alert alert-note" style="margin:0">QRIS statis hanya dapat dibuat oleh admin. <b>Hubungi admin</b> jika membutuhkan QRIS statis.</div>
@@ -384,7 +382,7 @@ canvas.chart{width:100%;height:200px;display:block}
           <div class="card-h"><div><div class="card-t">Semua Transaksi</div></div><button class="btn btn-ghost btn-sm" id="btn-tx-reload">Muat Ulang</button></div>
           <div class="tbl-wrap"><table>
             <thead><tr><th>ID</th><th>Waktu</th><th>Pengguna</th><th>Nominal</th><th>Status</th></tr></thead>
-            <tbody id="tx-body"><tr><td colspan="5" class="muted">Memuatâ¦</td></tr></tbody>
+            <tbody id="tx-body"><tr><td colspan="5" class="muted">MemuatÃ¢ÂÂ¦</td></tr></tbody>
           </table></div>
         </div>
       </div>
@@ -424,11 +422,11 @@ canvas.chart{width:100%;height:200px;display:block}
 
 <div class="modal-ov hidden" id="modal-notif">
   <div class="modal" style="max-width:640px">
-    <div class="modal-h"><h3>Log Notifikasi DANA</h3><button class="icon-btn" id="btn-notif-close">â</button></div>
+    <div class="modal-h"><h3>Log Notifikasi DANA</h3><button class="icon-btn" id="btn-notif-close">Ã¢ÂÂ</button></div>
     <p class="muted" style="font-size:12px;margin-bottom:12px">Semua notifikasi masuk dari aplikasi</p>
     <div class="tbl-wrap"><table>
       <thead><tr><th>WAKTU</th><th>NOMINAL</th><th>ISI</th><th>COCOK</th></tr></thead>
-      <tbody id="notif-body"><tr><td colspan="4" class="muted">Memuatâ¦</td></tr></tbody>
+      <tbody id="notif-body"><tr><td colspan="4" class="muted">MemuatÃ¢ÂÂ¦</td></tr></tbody>
     </table></div>
     <button class="btn btn-ghost btn-sm" id="btn-notif-reload" style="margin-top:12px">Muat Ulang</button>
   </div>
@@ -481,7 +479,7 @@ function rupiah(n) {
   return 'Rp' + Number(n || 0).toLocaleString('id-ID');
 }
 function fdate(ts) {
-  if (!ts) return 'â';
+  if (!ts) return 'Ã¢ÂÂ';
   const d = new Date(Number(ts) > 1e12 ? Number(ts) : Number(ts) * 1000);
   return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
@@ -612,8 +610,8 @@ async function loadDashboard() {
     $('#k-pending').textContent = pn;
     $('#k-vol').textContent = rupiah(vol);
     $('#k-vol24').textContent = '24 jam terakhir: ' + rupiah(s.today_volume ?? s.vol_24h ?? 0);
-    $('#k-rate').textContent = 'tingkat keberhasilan ' + (s.success_rate != null ? s.success_rate + '%' : (tt ? Math.round(pd / tt * 100) + '%' : 'â'));
-    $('#dash-updated').textContent = 'â¢ diperbarui ' + new Date().toLocaleTimeString('id-ID');
+    $('#k-rate').textContent = 'tingkat keberhasilan ' + (s.success_rate != null ? s.success_rate + '%' : (tt ? Math.round(pd / tt * 100) + '%' : 'Ã¢ÂÂ'));
+    $('#dash-updated').textContent = 'Ã¢ÂÂ¢ diperbarui ' + new Date().toLocaleTimeString('id-ID');
     try {
       const ch = await api('admin_charts', { days: 7 });
       const daily = ch.daily || [];
@@ -679,7 +677,7 @@ function drawDonut(cv, parts) {
 async function loadProfile() {
   try {
     const p = await api('user_profile');
-    $('#pf-user').textContent = p.username || (state.user && state.user.username) || 'â';
+    $('#pf-user').textContent = p.username || (state.user && state.user.username) || 'Ã¢ÂÂ';
     $('#pf-role').textContent = state.isAdmin ? 'Admin' : 'Pengguna';
     $('#pf-merchant').value = p.merchant_name || '';
     const bal = (state.user && state.user.balance != null) ? state.user.balance : null;
@@ -716,7 +714,7 @@ async function loadInternalSecret() {
     const r = await api('internal_secret', { check: true });
     $('#is-status').textContent = r.set ? 'Terpasang' : 'Belum diset';
     $('#is-status').style.color = r.set ? '#4ade80' : '#f87171';
-  } catch (e) { $('#is-status').textContent = 'â'; }
+  } catch (e) { $('#is-status').textContent = 'Ã¢ÂÂ'; }
 }
 
 /* ================= topup ================= */
@@ -821,11 +819,11 @@ async function decodeQrisPhoto() {
       if (d && d.data) {
         decodedQris = d.data.trim();
         $('#qris-decode-result').classList.remove('hidden');
-        $('#qris-dec-merchant').textContent = 'â';
-        $('#qris-dec-city').textContent = 'â';
+        $('#qris-dec-merchant').textContent = 'Ã¢ÂÂ';
+        $('#qris-dec-city').textContent = 'Ã¢ÂÂ';
         $('#qris-preview-box').style.display = '';
         await renderQR($('#qris-preview-holder'), decodedQris, '');
-        toast('QR terbaca â periksa lalu simpan');
+        toast('QR terbaca Ã¢ÂÂ periksa lalu simpan');
       } else {
         toast('QR tidak terbaca, coba foto lain yang lebih jelas');
       }
@@ -841,8 +839,8 @@ async function saveQrisStatic() {
   try {
     const r = await api('qris_config', { qris: decodedQris });
     const m = r.merchant || {};
-    $('#qris-dec-merchant').textContent = m.name || 'â';
-    $('#qris-dec-city').textContent = m.city || 'â';
+    $('#qris-dec-merchant').textContent = m.name || 'Ã¢ÂÂ';
+    $('#qris-dec-city').textContent = m.city || 'Ã¢ÂÂ';
     await loadQrisCurrent();
     toast('QRIS statis tersimpan');
   } catch (e) { toast('Gagal: ' + e.message); }
@@ -854,7 +852,7 @@ async function loadQrisCurrent() {
     $('#qris-current').textContent = r.configured
       ? 'Terhubung' + (r.merchant && r.merchant.name ? ' (' + r.merchant.name + ')' : '')
       : 'Belum diset';
-  } catch (e) { $('#qris-current').textContent = 'â'; }
+  } catch (e) { $('#qris-current').textContent = 'Ã¢ÂÂ'; }
 }
 
 /* ================= transaksi ================= */
@@ -864,7 +862,7 @@ async function loadTx() {
     const items = r.items || r.transactions || [];
     $('#tx-body').innerHTML = items.length ? items.map(t =>
       '<tr><td class="mono">#' + esc(t.id) + '</td><td>' + fdate(t.created_at) + '</td>' +
-      '<td><b>' + esc(t.username || t.user_masked || 'â') + '</b></td>' +
+      '<td><b>' + esc(t.username || t.user_masked || 'Ã¢ÂÂ') + '</b></td>' +
       '<td><b>' + rupiah(t.amount) + '</b></td><td>' + stBadge(t.status) + '</td></tr>'
     ).join('') : '<tr><td colspan="5" class="muted">Belum ada transaksi.</td></tr>';
   } catch (e) { $('#tx-body').innerHTML = '<tr><td colspan="5" class="muted">Gagal memuat.</td></tr>'; }
@@ -878,7 +876,7 @@ async function loadNotif() {
       '<tr><td>' + fdate(n.created_at) + '</td>' +
       '<td><b>' + rupiah(n.amount) + '</b></td>' +
       '<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis">' + esc(n.text || '') + '</td>' +
-      '<td>' + (n.matched_topup_id ? '<span class="status st-paid">#' + n.matched_topup_id + '</span>' : '<span class="muted">â</span>') + '</td></tr>'
+      '<td>' + (n.matched_topup_id ? '<span class="status st-paid">#' + n.matched_topup_id + '</span>' : '<span class="muted">Ã¢ÂÂ</span>') + '</td></tr>'
     ).join('') : '<tr><td colspan="4" class="muted">Belum ada notifikasi.</td></tr>';
   } catch (e) { $('#notif-body').innerHTML = '<tr><td colspan="4" class="muted">Gagal memuat.</td></tr>'; }
 }
@@ -1205,10 +1203,19 @@ async function savePassword() {
 /* ================= events & boot ================= */
 document.addEventListener('DOMContentLoaded', () => {
   $('#btn-login').addEventListener('click', doLogin);
-  $('#btn-is-set').addEventListener('click', async () => {
-    const v = $('#is-new').value.trim();
-    if (v.length < 16) { toast('Secret minimal 16 karakter'); return; }
-    try { await api('internal_secret', { secret: v }); $('#is-new').value = ''; toast('Internal secret tersimpan'); await loadInternalSecret(); }
+  document.getElementById('btn-is-gen').addEventListener('click', async () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let v = '';
+    const arr = new Uint32Array(32);
+    crypto.getRandomValues(arr);
+    for (let i = 0; i < 32; i++) v += chars[arr[i] % chars.length];
+    try {
+      await api('internal_secret', { secret: v });
+      document.getElementById('is-reveal-text').textContent = v;
+      document.getElementById('is-reveal-box').classList.remove('hidden');
+      toast('Secret baru dibuat - salin sekarang!');
+      await loadInternalSecret();
+    }
     catch (e) { toast('Gagal: ' + e.message); }
   });
   $('#btn-is-reveal').addEventListener('click', async () => {
@@ -1226,7 +1233,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function copyText(el, msg) {
     const t = $(el).textContent;
-    if (!t || t === 'â' || t === '(kosong)') { toast('Tidak ada yang disalin'); return; }
+    if (!t || t === 'Ã¢ÂÂ' || t === '(kosong)') { toast('Tidak ada yang disalin'); return; }
     navigator.clipboard.writeText(t).then(() => toast(msg || 'Disalin')).catch(() => {
       const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta);
       ta.select(); try { document.execCommand('copy'); toast(msg || 'Disalin'); } catch (e) { toast('Gagal menyalin'); }
