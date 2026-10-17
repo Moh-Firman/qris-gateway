@@ -296,11 +296,11 @@ canvas.chart{width:100%;height:200px;display:block}
               <button class="btn btn-ghost btn-sm" id="btn-is-reveal">Lihat</button>
               <button class="btn btn-ghost btn-sm" id="btn-is-del" style="color:#f87171">Hapus</button>
             </div>
-            <div class="code-box hidden" id="is-reveal-box" style="margin-top:12px"><pre id="is-reveal-text" style="word-break:break-all;white-space:pre-wrap"></pre></div>
+            <div class="code-box hidden" id="is-reveal-box" style="margin-top:12px"><button class="copy-btn" id="btn-is-copy">Salin</button><pre id="is-reveal-text" style="word-break:break-all;white-space:pre-wrap"></pre></div>
           </div>
           <div class="card">
             <div class="card-h"><div><div class="card-t">API Secret Saya</div><div class="card-t2">Untuk akses API personal kamu</div></div></div>
-            <div class="code-box" style="margin-top:4px"><pre id="as-text" style="word-break:break-all;white-space:pre-wrap">–</pre></div>
+            <div class="code-box" style="margin-top:4px"><button class="copy-btn" id="btn-as-copy">Salin</button><pre id="as-text" style="word-break:break-all;white-space:pre-wrap">–</pre></div>
             <div style="display:flex;gap:8px;margin-top:12px">
               <button class="btn btn-ghost btn-sm" id="btn-as-show">Tampilkan</button>
               <button class="btn btn-ghost btn-sm" id="btn-as-regen">Generate Baru</button>
@@ -1086,6 +1086,17 @@ document.addEventListener('DOMContentLoaded', () => {
     catch (e) { toast('Gagal: ' + e.message); }
   });
   $('#btn-as-show').addEventListener('click', () => loadApiSecret());
+  function copyText(el, msg) {
+    const t = $(el).textContent;
+    if (!t || t === '–' || t === '(kosong)') { toast('Tidak ada yang disalin'); return; }
+    navigator.clipboard.writeText(t).then(() => toast(msg || 'Disalin')).catch(() => {
+      const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand('copy'); toast(msg || 'Disalin'); } catch (e) { toast('Gagal menyalin'); }
+      ta.remove();
+    });
+  }
+  $('#btn-is-copy').addEventListener('click', () => copyText('#is-reveal-text', 'Internal secret disalin'));
+  $('#btn-as-copy').addEventListener('click', () => copyText('#as-text', 'API secret disalin'));
   $('#btn-as-regen').addEventListener('click', async () => {
     if (!confirm('Generate API secret baru? Yang lama jadi tidak berlaku.')) return;
     try { const r = await api('api_secret', { rotate: true }); $('#as-text').textContent = r.secret || '–'; toast('API secret baru dibuat'); }
