@@ -148,6 +148,24 @@ Aplikasi Android yang membaca notifikasi pembayaran DANA dan meneruskannya ke ga
 
 ## Instalasi
 
+### ⚡ Install Otomatis (disarankan)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Moh-Firman/qris-gateway/main/install.sh | sudo bash
+```
+
+Installer akan menanyakan **domain** kamu (misal: `eg.domain.com`):
+- **Diisi** → otomatis pasang HTTPS (Let's Encrypt via Caddy), dashboard + dokumentasi API langsung pakai domain itu
+- **Dikosongkan** → jalan via IP publik VPS
+
+> Pastikan DNS A record domain sudah mengarah ke IP VPS sebelum install.
+
+### 🔧 Install Manual
+
+<details>
+<summary>Klik untuk langkah manual</summary>
+
+
 ### 1. Persiapan VPS
 
 ```bash
@@ -218,6 +236,8 @@ gateway.example.com {
 5. Atur nama merchant di **Profil**
 
 ---
+
+</details>
 
 ## Penggunaan
 
