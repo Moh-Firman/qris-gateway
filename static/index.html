@@ -300,19 +300,6 @@ canvas.chart{width:100%;height:200px;display:block}
             <div class="code-box hidden" id="is-reveal-box" style="margin-top:12px"><button class="copy-btn" id="btn-is-copy">Salin</button><pre id="is-reveal-text" style="word-break:break-all;white-space:pre-wrap"></pre></div>
           </div>
           <div class="card">
-            <div class="card-h"><div><div class="card-t">DANA Notify (APK)</div><div class="card-t2">Konfigurasi webhook notifikasi pembayaran</div></div></div>
-            <p class="muted" style="font-size:12px;margin:8px 0 0">Pasang URL dan secret ini di aplikasi DANA Notify agar pembayaran otomatis terdeteksi dan saldo user langsung bertambah.</p>
-            <div class="kv" style="margin-top:10px"><span class="k">Webhook URL</span></div>
-            <div class="code-box" style="margin-top:4px"><button class="copy-btn" id="btn-dn-copy">Salin</button><pre id="dn-url" class="dyn-base" style="word-break:break-all;white-space:pre-wrap">/api/mutasi_notify</pre></div>
-            <div class="kv" style="margin-top:10px"><span class="k">Format</span><span class="v">POST JSON</span></div>
-            <div class="code-box" style="margin-top:4px"><pre style="font-size:11px">{
-  "secret": "INTERNAL_SECRET_KAMU",
-  "amount": 50000,
-  "text": "opsional - keterangan"
-}</pre></div>
-            <p class="muted" style="font-size:12px;margin:10px 0 0">Gunakan <b>Internal Secret</b> di atas sebagai nilai <span class="mono">secret</span>.</p>
-          </div>
-          <div class="card">
             <div class="card-h"><div><div class="card-t">API Secret Saya</div><div class="card-t2">Kunci akses API untuk akun kamu</div></div></div>
             <p class="muted" style="font-size:12px;margin:8px 0 0">Secret ini dipakai saat kamu memanggil API gateway sebagai user (misal cek saldo, buat topup via script). Jangan bagikan ke orang lain. Kalau bocor, klik <b>Generate Baru</b> — secret lama otomatis tidak berlaku.</p>
             <div class="code-box" style="margin-top:4px"><button class="copy-btn" id="btn-as-copy">Salin</button><pre id="as-text" style="word-break:break-all;white-space:pre-wrap">–</pre></div>
@@ -1122,9 +1109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     catch (e) { toast('Gagal: ' + e.message); }
   });
   $('#btn-as-show').addEventListener('click', () => loadApiSecret());
-  // DANA Notify URL: dynamic base
-  try { $('#dn-url').textContent = location.origin + '/api/mutasi_notify'; } catch (e) {}
-  $('#btn-dn-copy').addEventListener('click', () => copyText('#dn-url', 'Webhook URL disalin'));
+
   function copyText(el, msg) {
     const t = $(el).textContent;
     if (!t || t === '–' || t === '(kosong)') { toast('Tidak ada yang disalin'); return; }
