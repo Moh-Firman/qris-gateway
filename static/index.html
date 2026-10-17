@@ -180,6 +180,8 @@ canvas.chart{width:100%;height:200px;display:block}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>.login-hint{margin-top:12px;font-size:12px;color:var(--text2,#8b93a7);text-align:center}.login-hint code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:6px;font-family:monospace}</style>
 </head>
 <body>
 <div class="app">
@@ -214,6 +216,7 @@ canvas.chart{width:100%;height:200px;display:block}
           <div class="field"><input type="password" id="li-pass" placeholder="Password" autocomplete="current-password"></div>
           <div class="login-err" id="login-err"></div>
           <button class="login-btn" id="btn-login">Login</button>
+          <div class="login-hint">Login default: <code>admin</code> / <code>admin123</code> — segera ganti setelah masuk.</div>
         </div>
       </div>
     </div>
@@ -435,14 +438,20 @@ const $$ = (s) => Array.from(document.querySelectorAll(s));
 const state = { user: null, isAdmin: false, pollInt: null, timerInt: null };
 
 async function api(name, body) {
-  const r = await fetch('/api/' + name, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body || {})
+  const data = Object.assign({}, body || {});
+  const tok = localStorage.getItem('_gw_token');
+  if (tok) data._session_token = tok;
+  return new Promise((resolve, reject) => {
+    if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.Serverless) {
+      reject(new Error('Buka via Telegram Mini App'));
+      return;
+    }
+    Telegram.WebApp.Serverless.call(name, data, (err, result) => {
+      if (err) { reject(new Error(err.message || err.description || 'API error')); return; }
+      if (result && result.ok === false) { reject(new Error(result.error || 'API error')); return; }
+      resolve(result || {});
+    });
   });
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok || j.ok === false) throw new Error(j.error || j.message || ('HTTP ' + r.status));
-  return j;
 }
 function rupiah(n) {
   return 'Rp' + Number(n || 0).toLocaleString('id-ID');
@@ -546,6 +555,7 @@ async function doLogin() {
   if (!u || !p) { $('#login-err').textContent = 'Isi username dan password.'; return; }
   try {
     const r = await api('login', { username: u, password: p });
+    if (r.token) localStorage.setItem('_gw_token', r.token);
     const usr = r.user || { username: u };
     state.user = usr;
     state.isAdmin = !!(usr.is_admin || usr.isAdmin || usr.role === 'admin');
@@ -560,6 +570,7 @@ async function doLogin() {
 }
 async function doLogout() {
   try { await api('logout'); } catch (e) {}
+  localStorage.removeItem('_gw_token');
   state.user = null; state.isAdmin = false;
   showLogin();
 }
