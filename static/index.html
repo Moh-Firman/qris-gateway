@@ -460,20 +460,14 @@ const $$ = (s) => Array.from(document.querySelectorAll(s));
 const state = { user: null, isAdmin: false, pollInt: null, timerInt: null };
 
 async function api(name, body) {
-  const data = Object.assign({}, body || {});
-  const tok = localStorage.getItem('_gw_token');
-  if (tok) data._session_token = tok;
-  return new Promise((resolve, reject) => {
-    if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.Serverless) {
-      reject(new Error('Buka via Telegram Mini App'));
-      return;
-    }
-    Telegram.WebApp.Serverless.call(name, data, (err, result) => {
-      if (err) { reject(new Error(err.message || err.description || 'API error')); return; }
-      if (result && result.ok === false) { reject(new Error(result.error || 'API error')); return; }
-      resolve(result || {});
-    });
+  const r = await fetch('/api/' + name, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body || {})
   });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || j.ok === false) throw new Error(j.error || j.message || ('HTTP ' + r.status));
+  return j;
 }
 function rupiah(n) {
   return 'Rp' + Number(n || 0).toLocaleString('id-ID');
