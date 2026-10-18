@@ -28,7 +28,7 @@ ADMIN_ID = int(os.environ.get("ADMIN_ID", "8441388747"))
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("gateway")
 
-_db_lock = threading.Lock()
+_db_lock = threading.RLock()  # RLock: migrasi dipanggil di dalam lock
 # Rate limit sederhana: {ip: [timestamps]}
 _rl_store = {}
 _rl_lock = threading.Lock()
