@@ -107,6 +107,12 @@ tr:hover td{background:rgba(255,255,255,.015)}
 #pf-qris-box[data-theme="aurora"] .qr-art-mark{color:#67e8f9;background:#67e8f9}
 #pf-qris-box[data-theme="tropical"] .qr-art-mark{color:#a3e635;background:#a3e635}
 #pf-qris-box[data-theme="sunset"] .qr-art-mark{color:#fb923c;background:#fb923c}
+#topup-qris-box[data-theme="aurora"]{background:radial-gradient(ellipse at 8% 5%,rgba(34,211,238,.32),transparent 43%),linear-gradient(145deg,#0b1020 0%,#172554 58%,#123044 100%)}
+#topup-qris-box[data-theme="tropical"]{background:radial-gradient(ellipse at 12% 10%,rgba(163,230,53,.28),transparent 45%),linear-gradient(145deg,#052e2b 0%,#065f46 55%,#123c37 100%)}
+#topup-qris-box[data-theme="sunset"]{background:radial-gradient(ellipse at 12% 8%,rgba(251,146,60,.34),transparent 45%),linear-gradient(145deg,#30122d 0%,#7c2d12 60%,#4a163b 100%)}
+#topup-qris-box[data-theme="aurora"] .qr-art-mark{color:#67e8f9;background:#67e8f9}
+#topup-qris-box[data-theme="tropical"] .qr-art-mark{color:#a3e635;background:#a3e635}
+#topup-qris-box[data-theme="sunset"] .qr-art-mark{color:#fb923c;background:#fb923c}
 .qr-art-heading{margin:16px 0 0;font-size:20px;font-weight:800;letter-spacing:-.02em}
 .qr-art-code{display:flex;justify-content:center;align-items:center;width:max-content;max-width:100%;margin:16px auto 14px;padding:12px;background:#fff;border:1px solid rgba(255,255,255,.72);border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.24)}
 .qr-art-code canvas{display:block;width:220px;height:220px;max-width:100%;image-rendering:pixelated}
@@ -360,7 +366,12 @@ canvas.chart{width:100%;height:200px;display:block}
                 <div class="step done">2. Bayar</div>
                 <div class="step" id="step-3">3. Konfirmasi</div>
               </div>
-              <div class="qr-box"><img id="qr-img" alt="QRIS"></div>
+              <div class="qr-art-stage" id="topup-qris-box" data-theme="aurora" aria-live="polite">
+                <div class="qr-art-top"><span>QRIS / TOPUP</span><span class="qr-art-mark" aria-hidden="true"></span></div>
+                <div class="qr-art-heading">Scan untuk membayar</div>
+                <div class="qr-art-code"><div id="topup-qris-holder"></div></div>
+                <div class="qr-art-footer">Pola QRIS tetap asli agar mudah dipindai.<br>Kompatibel dengan aplikasi pembayaran QRIS.</div>
+              </div>
               <div class="pay-amount" id="qris-amount"></div>
               <div class="pay-note" id="qris-merchant-note" style="display:none">a.n. <b id="qris-merchant-name"></b></div>
               <div class="pay-note">Bayar <b>tepat</b> sesuai nominal di atas</div>
@@ -810,7 +821,7 @@ async function createTopup() {
     curTopup = r;
     $('#topup-form').classList.add('hidden');
     $('#qris-result').classList.remove('hidden');
-    $('#qr-img').src = makeQrCanvas(r.qris_string || r.qr || '', 6).toDataURL('image/png');
+    await renderQR($('#topup-qris-holder'), r.qris_string || r.qr || '', '');
     $('#qris-amount').textContent = rupiah(r.total ?? amount);
     if (r.merchant_name) { $('#qris-merchant-note').style.display = ''; $('#qris-merchant-name').textContent = r.merchant_name; }
     else $('#qris-merchant-note').style.display = 'none';
@@ -1194,7 +1205,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#btn-paid').addEventListener('click', confirmPaid);
   $('#btn-cancel-topup').addEventListener('click', resetTopupUI);
   $('#btn-qr-dl').addEventListener('click', () => {
-    const src = $('#qr-img').src; if (src) window.open(src, '_blank');
+    const c = $('#topup-qris-holder canvas'); if (c) window.open(c.toDataURL('image/png'), '_blank');
   });
   $('#qris-photo').addEventListener('change', decodeQrisPhoto);
   $('#btn-qris-save').addEventListener('click', saveQrisStatic);
