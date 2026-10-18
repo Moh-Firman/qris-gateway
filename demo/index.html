@@ -904,18 +904,18 @@ curl_exec($ch);`
     ex: {
       curl: `curl -X POST https://your-gateway.com/api/internal_create \
   -H "Content-Type: application/json" \
-  -d '{"secret": "SECRET_ANDA", "telegram_id": 123456, "amount": 50000}'`,
+  -d '{"secret": "SECRET_ANDA", "user_id": 1, "amount": 50000}'`,
       js: `await fetch('https://your-gateway.com/api/internal_create', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ secret: 'SECRET_ANDA', telegram_id: 123456, amount: 50000 })
+  body: JSON.stringify({ secret: 'SECRET_ANDA', user_id: 1, amount: 50000 })
 });`,
       python: `import requests
 requests.post('https://your-gateway.com/api/internal_create',
-  json={'secret': 'SECRET_ANDA', 'telegram_id': 123456, 'amount': 50000})`,
+  json={'secret': 'SECRET_ANDA', 'user_id': 1, 'amount': 50000})`,
       php: `$ch = curl_init('https://your-gateway.com/api/internal_create');
 curl_setopt($ch, CURLOPT_POSTFIELDS,
-  json_encode(['secret' => 'SECRET_ANDA', 'telegram_id' => 123456, 'amount' => 50000]));
+  json_encode(['secret' => 'SECRET_ANDA', 'user_id' => 1, 'amount' => 50000]));
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 curl_exec($ch);`
     },
