@@ -32,7 +32,7 @@ rm -rf /tmp/qris-src
 git clone -q https://github.com/Moh-Firman/qris-gateway.git /tmp/qris-src
 mkdir -p /opt/gateway/static
 cp /tmp/qris-src/gateway.py /opt/gateway/
-cp /tmp/qris-src/static/index.html /opt/gateway/static/
+cp -r /tmp/qris-src/static/. /opt/gateway/static/
 echo "      OK"
 
 echo "[3/5] Install systemd service..."
