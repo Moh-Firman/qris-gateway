@@ -284,15 +284,17 @@ Memakai `secret` di body, bukan session cookie. Untuk integrasi backend-to-backe
 | Parameter | Tipe | Wajib |
 |-----------|------|-------|
 | `secret` | string | Ya |
-| `telegram_id` | number | Ya |
+| `user_id` | number | Ya |
 | `amount` | number | Ya |
 | `merchant_name` | string | Tidak |
 
 ```bash
 curl -X POST https://gateway.example.com/api/internal_create \
   -H "Content-Type: application/json" \
-  -d '{"secret": "SECRET_ANDA", "telegram_id": 123456, "amount": 50000}'
+  -d '{"secret": "SECRET_ANDA", "user_id": 1, "amount": 50000}'
 ```
+
+> Catatan: `telegram_id` masih diterima sebagai fallback legacy (otomatis dimapping ke `user_id`).
 
 ### `internal_status` — Cek Status
 
@@ -311,7 +313,9 @@ curl -X POST https://gateway.example.com/api/internal_status \
 | Parameter | Tipe | Wajib |
 |-----------|------|-------|
 | `secret` | string | Ya |
-| `telegram_id` | number | Ya |
+| `user_id` | number | Ya |
+
+> Catatan: `telegram_id` masih diterima sebagai fallback legacy.
 
 ### `internal_merchant_name` — Set Nama Merchant
 
@@ -387,7 +391,7 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
     'secret' => 'SECRET_ANDA',
-    'telegram_id' => 123456,
+    'user_id' => 1, // atau telegram_id legacy
     'amount' => 50000
 ]));
 $response = json_decode(curl_exec($ch), true);

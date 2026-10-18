@@ -209,7 +209,7 @@ Semua endpoint memakai `POST` dengan JSON body. Dokumentasi lengkap dengan conto
 ```bash
 curl -X POST https://gateway.example.com/api/internal_create \
   -H "Content-Type: application/json" \
-  -d '{"secret": "SECRET_ANDA", "telegram_id": 123456, "amount": 50000}'
+  -d '{"secret": "SECRET_ANDA", "user_id": 1, "amount": 50000}'
 ```
 
 Response:

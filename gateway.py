@@ -88,8 +88,8 @@ def init_db():
         c.executescript("""
         CREATE TABLE IF NOT EXISTS qris_topups (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          telegram_id INTEGER NOT NULL,
-          user_id INTEGER,
+          user_id INTEGER NOT NULL,
+          telegram_id INTEGER,
           amount INTEGER NOT NULL,
           unique_code INTEGER NOT NULL,
           total INTEGER NOT NULL,
@@ -98,13 +98,16 @@ def init_db():
           created_at INTEGER NOT NULL,
           paid_at INTEGER
         );
-        CREATE INDEX IF NOT EXISTS idx_qris_user ON qris_topups(telegram_id);
+        CREATE INDEX IF NOT EXISTS idx_qris_user ON qris_topups(user_id);
+        CREATE INDEX IF NOT EXISTS idx_qris_tid ON qris_topups(telegram_id);
         CREATE INDEX IF NOT EXISTS idx_qris_status ON qris_topups(status);
         CREATE TABLE IF NOT EXISTS qris_users (
-          telegram_id INTEGER PRIMARY KEY,
+          user_id INTEGER PRIMARY KEY,
+          telegram_id INTEGER,
           balance INTEGER NOT NULL DEFAULT 0,
           created_at INTEGER NOT NULL
         );
+        CREATE INDEX IF NOT EXISTS idx_qris_users_tid ON qris_users(telegram_id);
         CREATE TABLE IF NOT EXISTS kv_store (
           key TEXT PRIMARY KEY,
           value TEXT NOT NULL
@@ -167,7 +170,59 @@ def init_db():
             c.execute("INSERT INTO users(username,pw_hash,salt,is_admin,balance,created_at)"
                       " VALUES('admin',?,?,1,0,?)", (ph, salt, int(time.time()*1000)))
             log.warning("User admin dibuat dengan password default 'admin123' — SEGERA GANTI via Pengaturan!")
+        _migrate_to_userid()
     log.info("DB siap: %s", DB_PATH)
+
+
+def _get_or_create_user_for_tid(c, tid):
+    """Cari user.id untuk telegram_id, buat user sintetis jika belum ada.
+    Hanya query tabel users (aman untuk struktur lama maupun baru)."""
+    uname = f"tg_{abs(int(tid))}"
+    r = c.execute("SELECT id FROM users WHERE username=?", (uname,)).fetchone()
+    if r:
+        return r["id"]
+    now = int(time.time() * 1000)
+    salt = os.urandom(16).hex()
+    ph = hash_pw(os.urandom(32).hex(), salt)
+    cur = c.execute("INSERT INTO users(username,pw_hash,salt,is_admin,balance,created_at)"
+                    " VALUES(?,?,?,0,0,?)", (uname, ph, salt, now))
+    return cur.lastrowid
+
+
+def _migrate_to_userid():
+    """Migrasi data lama berbasis telegram_id ke users.id. Idempotent."""
+    with _db_lock, db() as c:
+        # 1. Pastikan kolom user_id ada di qris_topups (DB lama)
+        cols = [r["name"] for r in c.execute("PRAGMA table_info(qris_topups)").fetchall()]
+        if "user_id" not in cols:
+            c.execute("ALTER TABLE qris_topups ADD COLUMN user_id INTEGER")
+        # 2. Migrasi struktur qris_users lama (PK=telegram_id) ke baru (PK=user_id)
+        pk = c.execute("SELECT sql FROM sqlite_master WHERE name='qris_users'").fetchone()
+        if pk and "telegram_id INTEGER PRIMARY KEY" in pk["sql"]:
+            c.execute("""CREATE TABLE IF NOT EXISTS qris_users_new (
+              user_id INTEGER PRIMARY KEY,
+              telegram_id INTEGER,
+              balance INTEGER NOT NULL DEFAULT 0,
+              created_at INTEGER NOT NULL
+            )""")
+            for row in c.execute("SELECT telegram_id, balance, created_at FROM qris_users").fetchall():
+                uid = _get_or_create_user_for_tid(c, row["telegram_id"])
+                c.execute("INSERT OR REPLACE INTO qris_users_new(user_id, telegram_id, balance, created_at)"
+                          " VALUES(?,?,?,?)", (uid, row["telegram_id"], row["balance"], row["created_at"]))
+            c.execute("DROP TABLE qris_users")
+            c.execute("ALTER TABLE qris_users_new RENAME TO qris_users")
+            c.execute("CREATE INDEX IF NOT EXISTS idx_qris_users_tid ON qris_users(telegram_id)")
+            log.info("Migrasi qris_users: telegram_id -> user_id selesai")
+        # 3. Isi user_id yang kosong di qris_topups
+        for row in c.execute("SELECT id, telegram_id FROM qris_topups WHERE user_id IS NULL").fetchall():
+            if row["telegram_id"] is None:
+                continue
+            uid = _get_or_create_user_for_tid(c, row["telegram_id"])
+            c.execute("UPDATE qris_topups SET user_id=? WHERE id=?", (uid, row["id"]))
+        # 4. Sinkronkan users.balance dari qris_users
+        for row in c.execute("SELECT user_id, balance FROM qris_users").fetchall():
+            c.execute("UPDATE users SET balance=? WHERE id=?", (row["balance"], row["user_id"]))
+        log.info("Migrasi user_id selesai")
 
 
 def kv_get(key):
@@ -312,7 +367,8 @@ def ep_login(p, u):
 
 
 def ep_register(p, u):
-    raise EpError("Pendaftaran akun baru dinonaktifkan. Hubungi admin.", "DISABLED")
+    """Pendaftaran akun web mandiri dengan validasi.
+    Rate-limited di do_POST. Username unik, password min 6 karakter."""
     username = str(p.get("username") or "").strip().lower()
     password = str(p.get("password") or "")
     if not username or len(username) < 3 or len(username) > 20 or not username.replace("_","").isalnum():
@@ -369,13 +425,10 @@ def settled_balance(user_id):
     """Saldo yang sudah settlement (>24 jam) dikurangi withdraw pending/approved."""
     now = int(time.time()*1000)
     cutoff = now - 24*3600000
-    # Cari telegram_id sintetis untuk user ini
     with _db_lock, db() as c:
-        r = c.execute("SELECT is_admin FROM users WHERE id=?", (user_id,)).fetchone()
-        tid = 8441388747 if (r and r["is_admin"]) else -user_id
         paid = c.execute("SELECT COALESCE(SUM(amount),0) s FROM qris_topups"
-                         " WHERE telegram_id=? AND status='paid' AND paid_at<?",
-                         (tid, cutoff)).fetchone()["s"]
+                         " WHERE user_id=? AND status='paid' AND paid_at<?",
+                         (user_id, cutoff)).fetchone()["s"]
         out = c.execute("SELECT COALESCE(SUM(amount),0) s FROM withdrawals"
                         " WHERE user_id=? AND status IN ('pending','approved')",
                         (user_id,)).fetchone()["s"]
@@ -517,16 +570,28 @@ class EpError(Exception):
 
 
 def get_user_id(payload, init_user):
-    # Prioritas: session login web -> ID sintetis negatif (kecuali admin -> ADMIN_ID)
+    """Return users.id untuk user yang terautentikasi.
+    Sumber identitas (prioritas):
+    1. Session login web (_session_user) -> users.id langsung
+    2. Telegram initData terverifikasi -> users.id via mapping telegram_id
+    TIDAK PERNAH percaya telegram_id dari payload client (celah spoofing)."""
     su = payload.get("_session_user")
     if su:
         if su.get("is_admin"):
             return ADMIN_ID
-        return -int(su["id"])  # user biasa: -id
+        return int(su["id"])  # users.id langsung, bukan sintetis negatif
     if init_user and init_user.get("id"):
-        return int(init_user["id"])
-    if payload.get("telegram_id"):
-        return int(payload["telegram_id"])
+        # Mapping telegram_id -> users.id (buat jika belum ada)
+        tid = int(init_user["id"])
+        with _db_lock, db() as c:
+            r = c.execute("SELECT user_id FROM qris_users WHERE telegram_id=?", (tid,)).fetchone()
+            if r:
+                return r["user_id"]
+            uid = _get_or_create_user_for_tid(c, tid)
+            now = int(time.time() * 1000)
+            c.execute("INSERT OR IGNORE INTO qris_users(user_id, telegram_id, balance, created_at)"
+                      " VALUES(?,?,0,?)", (uid, tid, now))
+            return uid
     raise EpError("Belum login.", "UNAUTHORIZED")
 
 
@@ -609,21 +674,23 @@ def ep_api_secret(p, u):
         return {"ok": True, "secret": s}
 
 
-def credit(tid, amount):
+def credit(user_id, amount):
+    """Kredit saldo ke users.id. Juga sinkron ke users.balance."""
     now = int(time.time() * 1000)
     with _db_lock, db() as c:
-        r = c.execute("SELECT balance FROM qris_users WHERE telegram_id=?", (tid,)).fetchone()
+        r = c.execute("SELECT balance, telegram_id FROM qris_users WHERE user_id=?", (user_id,)).fetchone()
         if r:
             bal = r["balance"] + amount
-            c.execute("UPDATE qris_users SET balance=? WHERE telegram_id=?", (bal, tid))
+            c.execute("UPDATE qris_users SET balance=? WHERE user_id=?", (bal, user_id))
         else:
             bal = amount
-            c.execute("INSERT INTO qris_users(telegram_id,balance,created_at) VALUES(?,?,?)",
-                      (tid, bal, now))
+            c.execute("INSERT INTO qris_users(user_id,balance,created_at) VALUES(?,?,?)",
+                      (user_id, bal, now))
+        c.execute("UPDATE users SET balance=? WHERE id=?", (bal, user_id))
         return bal
 
 
-def new_topup(tid, amount, merchant_name=None):
+def new_topup(user_id, amount, merchant_name=None):
     amount = round(float(amount))
     if not amount or amount < 1:
         raise EpError("Minimal Rp1.", "BAD_AMOUNT")
@@ -646,10 +713,13 @@ def new_topup(tid, amount, merchant_name=None):
             raise EpError("Gagal generate kode unik, coba lagi.", "RETRY")
         qris_string = make_dynamic_qris(static_qris, total, merchant_name)
         now = int(time.time() * 1000)
+        # Ambil telegram_id opsional untuk referensi legacy
+        trow = c.execute("SELECT telegram_id FROM qris_users WHERE user_id=?", (user_id,)).fetchone()
+        legacy_tid = trow["telegram_id"] if trow else None
         cur = c.execute(
-            "INSERT INTO qris_topups(telegram_id,amount,unique_code,total,qris_string,status,created_at)"
-            " VALUES(?,?,?,?,?,'pending',?)",
-            (tid, amount, unique_code, total, qris_string, now))
+            "INSERT INTO qris_topups(user_id,telegram_id,amount,unique_code,total,qris_string,status,created_at)"
+            " VALUES(?,?,?,?,?,?,'pending',?)",
+            (user_id, legacy_tid, amount, unique_code, total, qris_string, now))
         tid_out = cur.lastrowid
     mn = str(merchant_name).strip()[:25].upper() if merchant_name else None
     return {"id": tid_out, "amount": amount, "unique_code": unique_code, "total": total,
@@ -659,24 +729,26 @@ def new_topup(tid, amount, merchant_name=None):
 
 # ---------- Endpoints ----------
 def ep_whoami(p, u):
-    tid = get_user_id(p, u)
-    return {"telegram_id": tid, "first_name": (u or {}).get("first_name", ""),
-            "username": (u or {}).get("username", ""), "is_admin": tid == ADMIN_ID}
+    uid = get_user_id(p, u)
+    su = p.get("_session_user")
+    return {"user_id": uid, "first_name": (u or {}).get("first_name", ""),
+            "username": (su or {}).get("username") or (u or {}).get("username", ""),
+            "is_admin": uid == ADMIN_ID}
 
 
 def ep_balance_get(p, u):
-    tid = get_user_id(p, u)
+    uid = get_user_id(p, u)
     with _db_lock, db() as c:
-        r = c.execute("SELECT balance FROM qris_users WHERE telegram_id=?", (tid,)).fetchone()
+        r = c.execute("SELECT balance FROM qris_users WHERE user_id=?", (uid,)).fetchone()
         if not r:
-            c.execute("INSERT INTO qris_users(telegram_id,balance,created_at) VALUES(?,?,?)",
-                      (tid, 0, int(time.time()*1000)))
-            return {"balance": 0, "telegram_id": tid}
-        return {"balance": r["balance"], "telegram_id": tid}
+            c.execute("INSERT INTO qris_users(user_id,balance,created_at) VALUES(?,?,?)",
+                      (uid, 0, int(time.time()*1000)))
+            return {"balance": 0, "user_id": uid}
+        return {"balance": r["balance"], "user_id": uid}
 
 
 def ep_topup_create(p, u):
-    tid = get_user_id(p, u)
+    uid = get_user_id(p, u)
     # Ambil merchant name custom user jika ada
     mn = p.get("merchant_name")
     su = p.get("_session_user")
@@ -685,19 +757,19 @@ def ep_topup_create(p, u):
             r = c.execute("SELECT merchant_name FROM users WHERE id=?", (su["id"],)).fetchone()
             if r and r["merchant_name"]:
                 mn = r["merchant_name"]
-    return new_topup(tid, p.get("amount"), mn)
+    return new_topup(uid, p.get("amount"), mn)
 
 
 def ep_topup_cancel(p, u):
     su = p.get("_session_user")
-    tid = get_user_id(p, u)
+    uid = get_user_id(p, u)
     topup_id = int(p.get("id") or 0)
     with _db_lock, db() as c:
         t = c.execute("SELECT * FROM qris_topups WHERE id=?", (topup_id,)).fetchone()
         if not t:
             raise EpError("Tidak ditemukan.", "NOT_FOUND")
         # User hanya bisa batalkan milik sendiri, admin bisa semua
-        if not (su and su.get("is_admin")) and t["telegram_id"] != tid:
+        if not (su and su.get("is_admin")) and t["user_id"] != uid:
             raise EpError("Bukan milikmu.", "FORBIDDEN")
         if t["status"] != "pending":
             raise EpError("Sudah " + t["status"] + ".", "ALREADY")
@@ -715,7 +787,7 @@ def ep_topup_confirm(p, u):
         t = c.execute("SELECT * FROM qris_topups WHERE id=?", (_id,)).fetchone()
         if not t:
             raise EpError("Topup tidak ditemukan.", "NOT_FOUND")
-        if t["telegram_id"] != tid:
+        if t["user_id"] != tid:
             raise EpError("Bukan milikmu.", "FORBIDDEN")
         if t["status"] == "paid":
             return {"ok": True, "status": "paid", "amount": t["amount"]}
@@ -739,11 +811,11 @@ def expire_old_topups():
 
 def ep_topup_list(p, u):
     expire_old_topups()
-    tid = get_user_id(p, u)
+    uid = get_user_id(p, u)
     with _db_lock, db() as c:
         rows = c.execute(
             "SELECT id,amount,unique_code,total,status,created_at FROM qris_topups"
-            " WHERE telegram_id=? ORDER BY created_at DESC LIMIT 20", (tid,)).fetchall()
+            " WHERE user_id=? ORDER BY created_at DESC LIMIT 20", (uid,)).fetchall()
     return {"items": [dict(r) for r in rows]}
 
 
@@ -815,8 +887,8 @@ def scoped_tid(payload, init_user):
     su = payload.get("_session_user")
     if su and su.get("is_admin"):
         return ("1=1", [])
-    tid = get_user_id(payload, init_user)
-    return ("telegram_id=?", [tid])
+    uid = get_user_id(payload, init_user)
+    return ("user_id=?", [uid])
 
 
 def ep_admin_stats(p, u):
@@ -861,10 +933,10 @@ def ep_admin_transactions(p, u):
             total = c.execute(f"SELECT COUNT(*) c FROM qris_topups WHERE {where} AND status=?", (*wparams, status)).fetchone()["c"]
     items = []
     for r in rows:
-        tid = r["telegram_id"]
+        uid = r["user_id"]
         username = None
         items.append({"id": r["id"], "username": username,
-              "user_masked": "***"+str(tid)[-3:] if tid else "–",
+              "user_masked": "***"+str(uid)[-3:] if uid else "–",
               "amount": r["amount"], "unique_code": r["unique_code"],
               "total": r["total"], "status": r["status"],
               "created_at": r["created_at"], "paid_at": r["paid_at"]})
@@ -885,7 +957,7 @@ def ep_admin_notifications(p, u):
 def ep_admin_pending(p, u):
     require_admin(p, u)
     with _db_lock, db() as c:
-        rows = c.execute("SELECT id,telegram_id,amount,unique_code,total,created_at FROM qris_topups"
+        rows = c.execute("SELECT id,user_id,amount,unique_code,total,created_at FROM qris_topups"
                          " WHERE status='pending' ORDER BY created_at DESC LIMIT 50").fetchall()
     return {"items": [dict(r) for r in rows]}
 
@@ -907,7 +979,7 @@ def ep_admin_approve(p, u):
             c.execute("UPDATE qris_topups SET status='cancelled' WHERE id=?", (_id,))
             return {"ok": True, "action": "rejected"}
         c.execute("UPDATE qris_topups SET status='paid',paid_at=? WHERE id=?", (now, _id))
-    credit(t["telegram_id"], t["amount"])
+    credit(t["user_id"], t["amount"])
     return {"ok": True, "action": "approved", "amount": t["amount"]}
 
 
@@ -933,15 +1005,19 @@ def ep_internal_secret(p, u):
 def ep_internal_create(p, u):
     is_global, uid = check_secret(p)
     if is_global:
-        telegram_id = int(p.get("telegram_id") or 0)
-        if not telegram_id:
-            raise EpError("telegram_id wajib.", "BAD_INPUT")
+        # Terima user_id (baru) atau telegram_id (legacy, dimapping)
+        target_uid = int(p.get("user_id") or 0)
+        if not target_uid and p.get("telegram_id"):
+            tid = int(p.get("telegram_id"))
+            with _db_lock, db() as c:
+                r = c.execute("SELECT user_id FROM qris_users WHERE telegram_id=?", (tid,)).fetchone()
+                target_uid = r["user_id"] if r else _get_or_create_user_for_tid(c, tid)
+        if not target_uid:
+            raise EpError("user_id wajib.", "BAD_INPUT")
     else:
-        # Secret per-user: paksa ke ID user sendiri
-        with _db_lock, db() as c:
-            r = c.execute("SELECT is_admin FROM users WHERE id=?", (uid,)).fetchone()
-            telegram_id = 8441388747 if (r and r["is_admin"]) else -uid
-    return new_topup(telegram_id, p.get("amount"), p.get("merchant_name"))
+        # Secret per-user: paksa ke ID user sendiri (dari secret, bukan dari caller)
+        target_uid = uid
+    return new_topup(target_uid, p.get("amount"), p.get("merchant_name"))
 
 
 def ep_internal_status(p, u):
@@ -958,31 +1034,37 @@ def ep_internal_status(p, u):
             c.execute("UPDATE qris_topups SET status='expired' WHERE id=?", (_id,))
             t = dict(t); t["status"] = "expired"
         t = dict(t)
-    return {"id": t["id"], "telegram_id": t["telegram_id"], "amount": t["amount"],
+    return {"id": t["id"], "user_id": t["user_id"], "amount": t["amount"],
             "total": t["total"], "status": t["status"], "paid_at": t["paid_at"]}
 
 
 def ep_internal_pending(p, u):
     check_secret(p)  # (is_global, uid) - validasi saja
     with _db_lock, db() as c:
-        rows = c.execute("SELECT id,telegram_id,amount,unique_code,total,created_at FROM qris_topups"
+        rows = c.execute("SELECT id,user_id,amount,unique_code,total,created_at FROM qris_topups"
                          " WHERE status='pending' ORDER BY created_at DESC LIMIT 100").fetchall()
     return {"items": [dict(r) for r in rows]}
 
 
 def ep_internal_pending_by_user(p, u):
     is_global, uid = check_secret(p)
-    tid = int(p.get("telegram_id") or 0)
     if not is_global:
-        with _db_lock, db() as c:
-            r = c.execute("SELECT is_admin FROM users WHERE id=?", (uid,)).fetchone()
-            tid = 8441388747 if (r and r["is_admin"]) else -uid
-    if not tid:
-        raise EpError("telegram_id wajib.", "BAD_INPUT")
+        # Secret per-user: paksa ke ID sendiri
+        target_uid = uid
+    else:
+        target_uid = int(p.get("user_id") or 0)
+        if not target_uid and p.get("telegram_id"):
+            # Legacy: mapping telegram_id -> user_id
+            tid = int(p.get("telegram_id"))
+            with _db_lock, db() as c:
+                r = c.execute("SELECT user_id FROM qris_users WHERE telegram_id=?", (tid,)).fetchone()
+                target_uid = r["user_id"] if r else 0
+        if not target_uid:
+            raise EpError("user_id wajib.", "BAD_INPUT")
     with _db_lock, db() as c:
         rows = c.execute("SELECT id,amount,unique_code,total,status,created_at FROM qris_topups"
-                         " WHERE telegram_id=? AND status IN ('pending','paid')"
-                         " ORDER BY created_at DESC LIMIT 20", (tid,)).fetchall()
+                         " WHERE user_id=? AND status IN ('pending','paid')"
+                         " ORDER BY created_at DESC LIMIT 20", (target_uid,)).fetchall()
     return {"items": [dict(r) for r in rows]}
 
 
@@ -1001,8 +1083,8 @@ def ep_internal_approve(p, u):
         now = int(time.time()*1000)
         c.execute("UPDATE qris_topups SET status='paid',paid_at=? WHERE id=?", (now, _id))
     if not no_credit:
-        credit(t["telegram_id"], t["amount"])
-    return {"ok": True, "amount": t["amount"], "telegram_id": t["telegram_id"]}
+        credit(t["user_id"], t["amount"])
+    return {"ok": True, "amount": t["amount"], "user_id": t["user_id"]}
 
 
 def ep_mutasi_notify(p, u):
@@ -1043,10 +1125,10 @@ def ep_mutasi_notify(p, u):
         c.execute("UPDATE qris_topups SET status='paid',paid_at=? WHERE id=?", (now, t["id"]))
         c.execute("INSERT INTO qris_notifications(amount,raw_text,matched_topup_id,created_at)"
                   " VALUES(?,?,?,?)", (amount, text, t["id"], now))
-    bal = credit(t["telegram_id"], t["amount"])
+    bal = credit(t["user_id"], t["amount"])
     log.info("NOTIFY OTOMATIS OK: topup id=%d total=%d -> saldo %d", t["id"], amount, bal)
     return {"ok": True, "matched": True, "topup_id": t["id"],
-            "telegram_id": t["telegram_id"], "amount": t["amount"], "balance": bal}
+            "user_id": t["user_id"], "amount": t["amount"], "balance": bal}
 
 
 
@@ -1068,14 +1150,14 @@ def ep_admin_manual_credit(p, u):
         usr = c.execute("SELECT id, is_admin FROM users WHERE username=?", (username,)).fetchone()
         if not usr:
             raise EpError("User tidak ditemukan.", "NOT_FOUND")
-        tid = 8441388747 if usr["is_admin"] else -usr["id"]
+        uid = usr["id"]
         now = int(time.time()*1000)
-        cur = c.execute("INSERT INTO qris_topups(telegram_id,amount,unique_code,total,qris_string,"
+        cur = c.execute("INSERT INTO qris_topups(user_id,amount,unique_code,total,qris_string,"
                         "status,created_at,paid_at) VALUES(?,?,0,?,'manual', 'paid',?,?)",
-                        (tid, n["amount"], n["amount"], now, now))
+                        (uid, n["amount"], n["amount"], now, now))
         topup_id = cur.lastrowid
         c.execute("UPDATE qris_notifications SET matched_topup_id=? WHERE id=?", (topup_id, notif_id))
-    bal = credit(tid, n["amount"])
+    bal = credit(uid, n["amount"])
     log.info("MANUAL CREDIT: notif %d -> user %s amount %d", notif_id, username, n["amount"])
     return {"ok": True, "topup_id": topup_id, "username": username,
             "amount": n["amount"], "balance": bal}
@@ -1134,15 +1216,15 @@ def ep_admin_claim_process(p, u):
             return {"ok": True, "action": "rejected"}
         # Approve: kredit ke user yang klaim
         usr = c.execute("SELECT id, is_admin FROM users WHERE id=?", (n["claimed_by"],)).fetchone()
-        tid = 8441388747 if usr["is_admin"] else -usr["id"]
+        uid = usr["id"]
         now = int(time.time()*1000)
-        cur = c.execute("INSERT INTO qris_topups(telegram_id,amount,unique_code,total,qris_string,"
+        cur = c.execute("INSERT INTO qris_topups(user_id,amount,unique_code,total,qris_string,"
                         "status,created_at,paid_at) VALUES(?,?,0,?,'manual-claim','paid',?,?)",
-                        (tid, n["amount"], n["amount"], now, now))
+                        (uid, n["amount"], n["amount"], now, now))
         topup_id = cur.lastrowid
         c.execute("UPDATE qris_notifications SET matched_topup_id=? WHERE id=?",
                   (topup_id, notif_id))
-    bal = credit(tid, n["amount"])
+    bal = credit(uid, n["amount"])
     return {"ok": True, "action": "approved", "topup_id": topup_id, "balance": bal}
 
 
