@@ -403,19 +403,7 @@ canvas.chart{width:100%;height:200px;display:block}
       </div>
 
       <!-- E. TRANSAKSI (admin) -->
-      <div class="sec admin-sec" id="sec-tx">
-        <div class="sec-head">
-          <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-          <h2>Transaksi</h2>
-        </div>
-        <div class="card">
-          <div class="card-h"><div><div class="card-t">Semua Transaksi</div></div><button class="btn btn-ghost btn-sm" id="btn-tx-reload">Muat Ulang</button></div>
-          <div class="tbl-wrap"><table>
-            <thead><tr><th>ID</th><th>Waktu</th><th>Pengguna</th><th>Nominal</th><th>Status</th></tr></thead>
-            <tbody id="tx-body"><tr><td colspan="5" class="muted">Memuat…</td></tr></tbody>
-          </table></div>
-        </div>
-      </div>
+      
 
 
 
@@ -942,17 +930,6 @@ async function loadQrisCurrent() {
 }
 
 /* ================= transaksi ================= */
-async function loadTx() {
-  try {
-    const r = await api('admin_transactions');
-    const items = r.items || r.transactions || [];
-    $('#tx-body').innerHTML = items.length ? items.map(t =>
-      '<tr><td class="mono">#' + esc(t.id) + '</td><td>' + fdate(t.created_at) + '</td>' +
-      '<td><b>' + esc(t.username || t.user_masked || '–') + '</b></td>' +
-      '<td><b>' + rupiah(t.amount) + '</b></td><td>' + stBadge(t.status) + '</td></tr>'
-    ).join('') : '<tr><td colspan="5" class="muted">Belum ada transaksi.</td></tr>';
-  } catch (e) { $('#tx-body').innerHTML = '<tr><td colspan="5" class="muted">Gagal memuat.</td></tr>'; }
-}
 
 async function loadNotif() {
   try {
@@ -968,7 +945,7 @@ async function loadNotif() {
 }
 
 async function loadAdminAll() {
-  await Promise.all([refreshBalance(), loadHistory(), loadQrisCurrent(), loadTx()]);
+  await Promise.all([refreshBalance(), loadHistory(), loadQrisCurrent()]);
 }
 
 /* ================= dokumentasi api ================= */
@@ -1221,7 +1198,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   $('#qris-photo').addEventListener('change', decodeQrisPhoto);
   $('#btn-qris-save').addEventListener('click', saveQrisStatic);
-  $('#btn-tx-reload').addEventListener('click', loadTx);
   $('#btn-notif-reload').addEventListener('click', loadNotif);
   document.addEventListener('click', e => {
     const b = e.target.closest('.copy-btn[data-copy]');
