@@ -421,7 +421,7 @@ def ep_change_password(p, u):
     su = p.get("_session_user")
     if not su:
         raise EpError("Belum login.", "UNAUTHORIZED")
-    old = str(p.get("old") or ""); new = str(p.get("new") or "")
+    old = str(p.get("old") or p.get("old_password") or ""); new = str(p.get("new") or p.get("new_password") or "")
     if len(new) < 6:
         raise EpError("Password baru minimal 6 karakter.", "BAD_INPUT")
     with _db_lock, db() as c:
