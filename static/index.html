@@ -834,31 +834,25 @@ async function createTopup() {
   btn.disabled = false;
 }
 function startTimer(expiresAt) {
-  if (state.timerInt) clearInterval(state.timerInt);
   var el = document.getElementById('qris-timer');
-  if (!el) return;
-  var end = Number(expiresAt);
-  if (!end || isNaN(end)) end = Date.now() + 30 * 60 * 1000;
-  else if (end < 1e12) end = end * 1000;
-  function pad(n) { return (n < 10 ? '0' : '') + n; }
-  function tick() {
-    var remain = Math.max(0, end - Date.now());
-    var s = Math.floor(remain / 1000);
-    var m = Math.floor(s / 60);
-    el.textContent = 'Berlaku hingga ' + pad(m) + ':' + pad(s % 60);
-    if (remain <= 0) {
-      clearInterval(state.timerInt); state.timerInt = null; stopPoll();
-      // Otomatis batalkan topup yang kadaluarsa
-      if (curTopup && (curTopup.topup_id || curTopup.id)) {
-        api('topup_cancel', { id: curTopup.topup_id || curTopup.id }).catch(function(){});
-        curTopup = null;
-      }
-      el.textContent = 'Kadaluarsa - otomatis dibatalkan';
-      setTimeout(function() { resetTopupUI(); }, 2000);
+  if (!el) { console.log('timer el not found'); return; }
+  var end = parseInt(expiresAt, 10);
+  if (!end) end = Date.now() + 1800000;
+  else if (end < 1000000000000) end = end * 1000;
+  console.log('timer start, end:', end);
+  if (window._qrisTimer) clearInterval(window._qrisTimer);
+  window._qrisTimer = setInterval(function() {
+    var diff = end - Date.now();
+    if (diff <= 0) {
+      el.textContent = 'Kadaluarsa';
+      clearInterval(window._qrisTimer);
+      return;
     }
-  }
-  tick();
-  state.timerInt = setInterval(tick, 1000);
+    var totalSec = Math.floor(diff / 1000);
+    var mm = Math.floor(totalSec / 60);
+    var ss = totalSec % 60;
+    el.textContent = 'Berlaku hingga ' + (mm < 10 ? '0' + mm : mm) + ':' + (ss < 10 ? '0' + ss : ss);
+  }, 1000);
 }
 function startPoll(id) {
   stopPoll();
