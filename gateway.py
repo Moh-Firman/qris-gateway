@@ -213,6 +213,18 @@ def _migrate_to_userid():
             c.execute("ALTER TABLE qris_users_new RENAME TO qris_users")
             c.execute("CREATE INDEX IF NOT EXISTS idx_qris_users_tid ON qris_users(telegram_id)")
             log.info("Migrasi qris_users: telegram_id -> user_id selesai")
+        # 2b. Buat telegram_id nullable di qris_topups (jika masih NOT NULL)
+        _ti = [r for r in c.execute("PRAGMA table_info(qris_topups)").fetchall()]
+        _tid_col = next((r for r in _ti if r["name"] == "telegram_id"), None)
+        if _tid_col and _tid_col["notnull"]:
+            # Recreate tabel dengan telegram_id nullable
+            cols = ", ".join([f'{r["name"]} {r["type"]}' + ("" if r["name"]=="telegram_id" else (" NOT NULL" if r["notnull"] else "")) + (f' DEFAULT {r["dflt_value"]}' if r["dflt_value"] else "") + (" PRIMARY KEY" if r["pk"] else "") for r in _ti])
+            c.execute(f"CREATE TABLE qris_topups_new ({cols})")
+            col_names = ", ".join([r["name"] for r in _ti])
+            c.execute(f"INSERT INTO qris_topups_new ({col_names}) SELECT {col_names} FROM qris_topups")
+            c.execute("DROP TABLE qris_topups")
+            c.execute("ALTER TABLE qris_topups_new RENAME TO qris_topups")
+            log.info("Migrasi: telegram_id jadi nullable")
         # 3. Isi user_id yang kosong di qris_topups
         for row in c.execute("SELECT id, telegram_id FROM qris_topups WHERE user_id IS NULL").fetchall():
             if row["telegram_id"] is None:
