@@ -204,6 +204,14 @@ Semua endpoint memakai `POST` dengan JSON body. Dokumentasi lengkap dengan conto
 | `/api/internal_status` | Secret | Cek status (server-to-server) |
 | `/api/mutasi_notify` | Secret | Terima notifikasi DANA |
 
+### Identitas Pengguna
+
+Setiap pengguna memiliki `user_id` unik (angka). Semua transaksi, saldo, dan riwayat terikat ke `user_id`, bukan ke Telegram ID.
+
+- **Pengguna web**: daftar via dashboard, dapat `user_id` otomatis
+- **Pengguna Telegram**: `telegram_id` dimapping otomatis ke `user_id` saat pertama kali terhubung
+- **Server-to-server**: gunakan `user_id` di parameter (contoh di bawah). `telegram_id` masih diterima sebagai fallback untuk kompatibilitas lama.
+
 ### Contoh: Buat Topup via API
 
 ```bash
