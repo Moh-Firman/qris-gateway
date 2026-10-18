@@ -19,7 +19,7 @@
 <p align="center">
   <a href="https://github.com/Moh-Firman/qris-gateway/raw/main/dana-notify.apk"><b>📱 Download APK DANA Notify</b></a>
   &nbsp;•&nbsp;
-  <a href="https://qris-gateway-demo-4exfq13we-fanxyzxd-iis-projects.vercel.app/"><b>🖥️ Live Demo Dashboard</b></a>
+  <a href="https://qris-gateway-demo-rol6kcspk-fanxyzxd-iis-projects.vercel.app/"><b>🖥️ Live Demo Dashboard</b></a>
 </p>
 
 ---
@@ -28,7 +28,7 @@
 
 Coba dashboard langsung tanpa install — data contoh, tidak ada transaksi sungguhan:
 
-**[qris-gateway-demo-4exfq13we-fanxyzxd-iis-projects.vercel.app](https://qris-gateway-demo-4exfq13we-fanxyzxd-iis-projects.vercel.app/)**
+**[qris-gateway-demo-rol6kcspk-fanxyzxd-iis-projects.vercel.app](https://qris-gateway-demo-rol6kcspk-fanxyzxd-iis-projects.vercel.app/)**
 
 Login demo: username `demo` / password `demo123` (terisi otomatis).
 
