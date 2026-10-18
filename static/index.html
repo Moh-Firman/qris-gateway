@@ -375,7 +375,7 @@ canvas.chart{width:100%;height:200px;display:block}
               <div class="pay-amount" id="qris-amount"></div>
               <div class="pay-note" id="qris-merchant-note" style="display:none">a.n. <b id="qris-merchant-name"></b></div>
               <div class="pay-note">Bayar <b>tepat</b> sesuai nominal di atas</div>
-              <div class="countdown" id="qris-timer"></div>
+              <div class="countdown" id="qris-timer">Berlaku hingga --:--</div>
               <button class="btn btn-ghost btn-block" id="btn-qr-dl" style="margin-bottom:8px">Unduh Gambar QR Code</button>
               <div class="alert alert-warn">Buka <b>DANA / OVO / GoPay / m-banking</b> lalu scan QR dan bayar.</div>
               <button class="btn btn-primary btn-block" id="btn-paid">Cek Status Pembayaran</button>
@@ -836,13 +836,18 @@ async function createTopup() {
 function startTimer(expiresAt) {
   clearInterval(state.timerInt);
   const el = $('#qris-timer');
-  const end = Number(expiresAt) > 1e12 ? Number(expiresAt) : Number(expiresAt) * 1000;
-  const tick = () => {
-    const s = Math.max(0, Math.floor((end - Date.now()) / 1000));
-    el.textContent = 'Berlaku ' + String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
-    if (s <= 0) { clearInterval(state.timerInt); stopPoll(); }
-  };
-  tick(); state.timerInt = setInterval(tick, 1000);
+  if (!el) return;
+  let end = Number(expiresAt);
+  if (!end || isNaN(end)) end = Date.now() + 30 * 60 * 1000;
+  else if (end < 1e12) end = end * 1000;
+  const d = new Date(end);
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  el.textContent = 'Berlaku hingga ' + hh + ':' + mm;
+  // Tetap cek expired untuk stop polling
+  state.timerInt = setInterval(() => {
+    if (Date.now() >= end) { clearInterval(state.timerInt); stopPoll(); el.textContent = 'Kadaluarsa'; }
+  }, 5000);
 }
 function startPoll(id) {
   stopPoll();
