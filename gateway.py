@@ -1325,7 +1325,12 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             return self._json(400, {"ok": False, "error": "bad json"})
         init_user = verify_init_data(payload.pop("_initData", ""))
-        payload["_session_user"] = get_session_user(self.headers.get("Cookie"))
+        # Terima token dari body (_session_token) atau cookie (gw_session)
+        _tok = payload.pop("_session_token", None)
+        _cookie = self.headers.get("Cookie")
+        if _tok and "gw_session=" not in (_cookie or ""):
+            _cookie = f"gw_session={_tok}"
+        payload["_session_user"] = get_session_user(_cookie)
         payload["_client_ip"] = self.client_address[0] if self.client_address else "?"
         # Rate limit untuk endpoint sensitif
         if name in ("login", "register", "mutasi_notify"):
