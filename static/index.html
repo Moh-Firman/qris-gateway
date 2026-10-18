@@ -821,12 +821,14 @@ async function createTopup() {
     curTopup = r;
     $('#topup-form').classList.add('hidden');
     $('#qris-result').classList.remove('hidden');
-    await renderQR($('#topup-qris-holder'), r.qris_string || r.qr || '', '');
+    startTimer(r.expires_at);
+    startPoll(r.topup_id ?? r.id);
+    try {
+      await renderQR($('#topup-qris-holder'), r.qris_string || r.qr || '', '');
+    } catch (qe) { toast('QR gagal: ' + qe.message); }
     $('#qris-amount').textContent = rupiah(r.total ?? amount);
     if (r.merchant_name) { $('#qris-merchant-note').style.display = ''; $('#qris-merchant-name').textContent = r.merchant_name; }
     else $('#qris-merchant-note').style.display = 'none';
-    startTimer(r.expires_at);
-    startPoll(r.topup_id ?? r.id);
     $('#step-3').classList.remove('done');
   } catch (e) { toast('Gagal: ' + e.message); }
   btn.disabled = false;
