@@ -361,7 +361,8 @@ def ep_login(p, u):
         _clear_login_fails(username, ip)
         user = dict(r)
     token = create_session(user["id"])
-    return {"ok": True, "_set_cookie": f"gw_session={token}; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax",
+    return {"ok": True, "token": token,
+            "_set_cookie": f"gw_session={token}; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax",
             "user": {"id": user["id"], "username": user["username"],
                      "is_admin": bool(user["is_admin"]), "balance": user["balance"]}}
 
