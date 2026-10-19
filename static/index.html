@@ -769,7 +769,7 @@ async function saveProfile() {
   const mn = $('#pf-merchant').value.trim();
   const btn = $('#btn-save-profile'); btn.disabled = true;
   try {
-    await api('user_qris', { set: true, merchant_name: mn });
+    await api('user_profile', { merchant_name: mn });
     toast('Profil tersimpan');
     await loadProfile();
     await showMyQris();
