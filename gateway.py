@@ -192,6 +192,14 @@ def _get_or_create_user_for_tid(c, tid):
 def _migrate_to_userid():
     """Migrasi data lama berbasis telegram_id ke users.id. Idempotent."""
     with _db_lock, db() as c:
+        # Skip cepat jika migrasi sudah selesai (hindari lock)
+        try:
+            pk = c.execute("SELECT sql FROM sqlite_master WHERE name='qris_users'").fetchone()
+            nulls = c.execute("SELECT COUNT(*) FROM qris_topups WHERE user_id IS NULL").fetchone()[0]
+            if pk and "user_id INTEGER PRIMARY KEY" in pk["sql"] and nulls == 0:
+                return
+        except Exception:
+            pass
         # 1. Pastikan kolom user_id ada di qris_topups (DB lama)
         cols = [r["name"] for r in c.execute("PRAGMA table_info(qris_topups)").fetchall()]
         if "user_id" not in cols:
